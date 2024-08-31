@@ -7,6 +7,13 @@
 #define XSHUT_PIN 3
 #define VL53L0X_ADDRESS_START 0x30
 
+#define frontTOFLimit 300
+#define frontTOFMinimum 500
+#define rUSLimit 20 
+#define lUSLimit 20
+
+#define N 1500
+
 const int trigPinr = 3;
 const int echoPinr = 2;
 const int trigPinl = 5;
@@ -14,7 +21,7 @@ const int echoPinl = 4;
 
 const byte SX1509_ADDRESS = 0x3F;
 const uint8_t sensorCount = 1;
-const uint8_t xshutPins[1] = {0};
+const uint8_t xshutPins[sensorCount] = {0};
 float duration, distance, distance_left, distance_right, tof_distance,front_tof;
 
 Servo Rservo;
@@ -58,6 +65,11 @@ void setup() {
  
 }
 
+//===============================================================================//
+//                                    Logic                                      //
+//===============================================================================//
+
+// Function used to read ultrasonic readings
 float ping(int32_t trigPin, int32_t echoPin) {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -69,40 +81,68 @@ float ping(int32_t trigPin, int32_t echoPin) {
   return distance;
 }
 
+
+/*
+================================================|
+ Right Motor:         | Left Motor:             |
+--------------        | -------------           |
+FW Full-Power = 1950  | FW Full-Power = 1050    |
+REV Full-Power = 1050 | REV Full-Power = 1950   |
+================================================|
+*/
+
 void turn_left() {
     Rservo.writeMicroseconds(1950);  
     Lservo.writeMicroseconds(1950); 
+    // Rservo.writeMicroseconds(N);  
+    // Lservo.writeMicroseconds(N);  
 }
 
 void turn_right() {
     Rservo.writeMicroseconds(1050);  
-    Lservo.writeMicroseconds(1050); 
+    Lservo.writeMicroseconds(1050);
+    // Rservo.writeMicroseconds(N);  
+    // Lservo.writeMicroseconds(N);   
 }
 
-void go_straight_slow() {
+void go_straight() {
   Rservo.writeMicroseconds(1900);  
-  Lservo.writeMicroseconds(1100);  
+  Lservo.writeMicroseconds(1100);
+  // Rservo.writeMicroseconds(N);  
+  // Lservo.writeMicroseconds(N);    
 }
+
+/*
+================= 
+  MAIN FUNCTION 
+=================
+*/
 void loop() {
-  // Serial.print(" Middle: ");
-  // Serial.print(tof_distance);
   for (uint8_t i = 0; i < sensorCount; i++)
   {
-    distance_left = ping(trigPinl, echoPinl);
-    Serial.print(" Distance: Left ");
-    Serial.print(distance_left);
-    Serial.print(" Distance: Middle ");
+    distance_left = ping(trigPinl, echoPinl); // Left US Sensor Reading
+    
     front_tof = sensors[i].readRangeContinuousMillimeters();
-    Serial.print(front_tof);
+
     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-    distance_right = ping(trigPinr, echoPinr);
+    distance_right = ping(trigPinr, echoPinr); // Right US Sensor Reading
+
+    Serial.print(" Left: ");
+    Serial.print(distance_left);
+    Serial.print('\t');
+    
+    Serial.print(" Middle: ");
+    Serial.print(front_tof);
+    Serial.print('\t');
+    
     Serial.print(" Right: ");
     Serial.println(distance_right);
+    Serial.print('\t');
   }
-  
-  if (front_tof < 250){///units in mm
+
+  if (front_tof < frontTOFLimit){///units in mm
     if (distance_right < distance_left){
-      while (front_tof < 450){
+      while (front_tof < frontTOFMinimum){
         for (uint8_t i = 0; i < sensorCount; i++){
             front_tof = sensors[i].readRangeContinuousMillimeters();
             if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
@@ -111,7 +151,7 @@ void loop() {
       }
     }
     else if (distance_right > distance_left){
-      while (front_tof < 450){
+      while (front_tof < frontTOFMinimum){
         for (uint8_t i = 0; i < sensorCount; i++) {
             front_tof = sensors[i].readRangeContinuousMillimeters();
             if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }   
@@ -120,16 +160,16 @@ void loop() {
       }
     }
   }
-  else if (distance_right < 20) {///units in cm
+  else if (distance_right < lUSLimit) {///units in cm
     turn_left();
   }
 
-   else if (distance_left < 20) {///units in cm
+   else if (distance_left < rUSLimit) {///units in cm
     turn_right();
   }
 
   else {
-    go_straight_slow();
+    go_straight();
   }
   
   delay(50);
