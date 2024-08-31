@@ -27,8 +27,8 @@ void setup() {
   pinMode(echoPinr, INPUT);
   pinMode(trigPinl, OUTPUT);
   pinMode(echoPinl, INPUT);
-  Rservo.attach(29);
-  Lservo.attach(28);
+  Rservo.attach(28);
+  Lservo.attach(8);
   // Rservo.writeMicroseconds(1500);  
   // Lservo.writeMicroseconds(1500);  
   Serial.begin(115200);
@@ -80,8 +80,8 @@ void turn_right() {
 }
 
 void go_straight_slow() {
-  Rservo.writeMicroseconds(1800);  
-  Lservo.writeMicroseconds(1200);  
+  Rservo.writeMicroseconds(1900);  
+  Lservo.writeMicroseconds(1100);  
 }
 void loop() {
   // Serial.print(" Middle: ");
