@@ -1,67 +1,13 @@
-#include <iostream>
-using namespace std;
-
 #include "navigation.h"
-
-#define IRQ_PIN 2
-#define XSHUT_PIN 3
-#define VL53L0X_ADDRESS_START 0x30
 
 #define frontTOFLimit 300
 #define frontTOFMinimum 500
 #define rUSLimit 20 
 #define lUSLimit 20
 
-#define N 1500
+#define N 1500 // Neutral Speed
 
-// Constructor
-Navigation::Navigation() : io(SX1509_ADDRESS) {} // NOT SURE ABOUT THIS
-
-// Setup Function
-Navigation::setup(){
-  pinMode(trigPinr, OUTPUT);
-  pinMode(echoPinr, INPUT);
-  pinMode(trigPinl, OUTPUT);
-  pinMode(echoPinl, INPUT);
-
-  Rservo.attach(20);
-  Lservo.attach(8);
-
-  Serial.begin(115200);
-  io.being(SX1509_ADDRESS);
-  Wire.begin();
-  Wire.setClock(400000);
-
-  for (uint8_t i = 0; i < sensorCount) {
-    io.pinMode(xshutPins[i], OUTPUT);
-    io.digitalWrite(xshutPins[i], LOW);
-  }
-
-  for (uint8_t i = 0; i < sensorCount; i++) {
-    io.digitalWrite(xshutPins[i], HIGH);
-    delay(10);
-    sensors[i].setTimeout(500);
-    if (!sensors[i].init()) {
-      Serial.print("Failed to detect and initialise sensor");
-      Serial.println(i);
-      while(1);
-    }
-    sensor[i].setAddress(VL53L0X_ADDRESS_START + i);
-    sensors[i].startContinuous(50);
-  }
-}
-
-// Function for reading and writing from ultrasonic sensors 
-float Navigation::ping(int32_t trigPin, int32_t echoPin) {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicrosconds(10);
-  digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
-  distance = (duration * .0343) / 2;
-  return distance;
-}
+Navigation::Navigation()
 
 void Navigation::turn_left() {
     Rservo.writeMicroseconds(1950);  
@@ -73,7 +19,7 @@ void Navigation::turn_right() {
     Lservo.writeMicroseconds(1050); 
 }
 
-void Navigation::go_straight_slow() {
+void Navigation::go_straight() {
   Rservo.writeMicroseconds(1900);  
   Lservo.writeMicroseconds(1100);  
 }

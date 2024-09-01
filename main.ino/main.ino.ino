@@ -4,7 +4,7 @@ Navigation navigation;
 
 void setup() {
   // put your setup code here, to run once:
-  navigation.setup();
+  sensor.setup();
 }
 
 void loop() {
