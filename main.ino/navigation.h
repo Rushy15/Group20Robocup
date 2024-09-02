@@ -32,7 +32,7 @@ class Navigation {
     Servo Rservo;
     Servo Lservo;
     SX1509 io;
-    VL53L0X sensors[];
+    VL53L0X sensors[sensorCount];
 
     float ping(int32_t trigPin, int32_t echoPin);
 
