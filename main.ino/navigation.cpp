@@ -7,8 +7,6 @@
 
 #define N 1500 // Neutral Speed
 
-Navigation::Navigation()
-
 void Navigation::turn_left() {
     Rservo.writeMicroseconds(1950);  
     Lservo.writeMicroseconds(1950); 

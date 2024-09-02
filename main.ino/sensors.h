@@ -8,10 +8,11 @@
 #include <Arudino.h>
 #include <Wire.h>
 
+#include <cstdlib>
+#include <cstdint>
 
 class Sensors {
   public:
-    Sensors();
     void setup();
 
   protected:
@@ -22,9 +23,9 @@ class Sensors {
     
     float duration, distance, distance_left, distance_right, front_tof;
 
-    static const byte SX1059_ADDRESS = 0x3F;
+    static const byte SX1509_ADDRESS = 0x3F;
     static const uint8_t sensorCount = 1;
-    static const uint8_t xshutPins[sensorCount] = {0};
+    static constexpr uint8_t xshutPins[sensorCount] = {0};
 
     Servo Rservo;
     Servo Lservo;
