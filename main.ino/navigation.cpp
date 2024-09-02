@@ -24,7 +24,7 @@ void Navigation::setup(){
   pinMode(trigPinl, OUTPUT);
   pinMode(echoPinl, INPUT);
   Serial.print("set up 1");
-  Rservo.attach(20);
+  Rservo.attach(28);
   Lservo.attach(8);
 
   Serial.begin(115200);
