@@ -19,6 +19,10 @@ const int echoPinr = 2;
 const int trigPinl = 5;
 const int echoPinl = 4;
 
+bool turn_direction = NULL;
+int turn_counter = 0;
+uint32_t my_time = 0;
+
 const byte SX1509_ADDRESS = 0x3F;
 const uint8_t sensorCount = 1;
 const uint8_t xshutPins[sensorCount] = {0};
@@ -91,16 +95,50 @@ REV Full-Power = 1050 | REV Full-Power = 1950   |
 ================================================|
 */
 
+void get_my_time() {
+  if (turn_counter == 1) {
+    my_time = millis();
+  }
+}
+
+bool stuck() {
+  if (turn_counter > 5) {
+    int end_time = millis();
+    if ((end_time - my_time) < 3000) {
+      return 1;
+    }
+  } 
+  return 0;
+}
+
+void reverse_left() {
+  Lservo.writeMicroseconds(1950);
+  Rservo.writeMicroseconds(1950);   
+}
+
+void reverse_right() {
+  Rservo.writeMicroseconds(1050);
+  Lservo.writeMicroseconds(1200);
+}
+
 void turn_left() {
+    if (turn_direction == 1) {
+      turn_counter += 1;
+    }
     Rservo.writeMicroseconds(1950);  
     Lservo.writeMicroseconds(1950); 
+    turn_direction = 0;
     // Rservo.writeMicroseconds(N);  
     // Lservo.writeMicroseconds(N);  
 }
 
 void turn_right() {
+  if (turn_direction == 0) {
+      turn_counter += 1;
+    }
     Rservo.writeMicroseconds(1050);  
     Lservo.writeMicroseconds(1050);
+    turn_direction = 1;
     // Rservo.writeMicroseconds(N);  
     // Lservo.writeMicroseconds(N);   
 }
@@ -121,23 +159,32 @@ void loop() {
   for (uint8_t i = 0; i < sensorCount; i++)
   {
     distance_left = ping(trigPinl, echoPinl); // Left US Sensor Reading
-    
     front_tof = sensors[i].readRangeContinuousMillimeters();
-
     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
     distance_right = ping(trigPinr, echoPinr); // Right US Sensor Reading
+    // Serial.print(" Left: ");
+    // Serial.print(distance_left);
+    // Serial.print('\t');
+    
+    // Serial.print(" Middle: ");
+    // Serial.print(front_tof);
+    // Serial.print('\t');
+    
+    // Serial.print(" Right: ");
+    // Serial.println(distance_right);
+    // Serial.print('\t');
+  }
+  
+  get_my_time();
 
-    Serial.print(" Left: ");
-    Serial.print(distance_left);
-    Serial.print('\t');
-    
-    Serial.print(" Middle: ");
-    Serial.print(front_tof);
-    Serial.print('\t');
-    
-    Serial.print(" Right: ");
-    Serial.println(distance_right);
-    Serial.print('\t');
+  if (stuck()) {
+    if (turn_direction == 0) {
+      reverse_left();
+      delay(1000);
+    } else {
+      reverse_right();
+      delay(1000);
+    }
   }
 
   if (front_tof < frontTOFLimit){///units in mm
@@ -170,6 +217,7 @@ void loop() {
 
   else {
     go_straight();
+    turn_counter = 0;
   }
   
   delay(50);
