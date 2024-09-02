@@ -5,7 +5,7 @@
 
 class Navigation: public Sensors {
   public:
-    Navigtation();
+    Navigation();
     void loop();
   
   private:
