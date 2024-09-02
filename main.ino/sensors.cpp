@@ -20,7 +20,7 @@ Sensors::setup(){
   Wire.begin();
   Wire.setClock(400000);
 
-  for (uint8_t i = 0; i < sensorCount) {
+  for (uint8_t i = 0; i < sensorCount; i++) {
     io.pinMode(xshutPins[i], OUTPUT);
     io.digitalWrite(xshutPins[i], LOW);
   }
