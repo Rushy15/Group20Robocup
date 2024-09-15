@@ -17,17 +17,17 @@ well.
 const byte SX1509_ADDRESS = 0x3F;
 #define VL53L0X_ADDRESS_START 0x30
 #define VL53L1X_ADDRESS_START 0x35
-
-
+//#define LONG_RANGE
+#define HIGH_SPEED
+//#define HIGH_ACCURACY
 // The number of sensors in your system.
-const uint8_t sensorCountL0 = 2;
-const uint8_t sensorCountL1 = 2;
-int distance;
-
+const uint8_t sensorCountL0 = 1;
+const uint8_t sensorCountL1 = 4;
+int sensor1,sensor2,sensor3,sensor4,sensor5,sensor6,sensor7,tof_holder,tof_holder_2 = 0;
 
 // The Arduino pin connected to the XSHUT pin of each sensor.
-const uint8_t xshutPinsL0[sensorCountL0] = {0, 1};
-const uint8_t xshutPinsL1[sensorCountL1] = {5, 6};
+const uint8_t xshutPinsL0[sensorCountL0] = {0};
+const uint8_t xshutPinsL1[sensorCountL1] = {3,4,5,6};
 
 SX1509 io; // Create an SX1509 object to be used throughout
 VL53L0X sensorsL0[sensorCountL0];
@@ -35,9 +35,8 @@ VL53L1X sensorsL1[sensorCountL1];
 
 void setup()
 {
-  while (!Serial) {}
+  
   Serial.begin(115200);
-
   io.begin(SX1509_ADDRESS);
 
   Wire.begin();
@@ -74,7 +73,20 @@ void setup()
       Serial.println(i);
       while (1);
     }
-
+      #if defined LONG_RANGE
+    // lower the return signal rate limit (default is 0.25 MCPS)
+    sensorsL0[i].setSignalRateLimit(0.1);
+    // increase laser pulse periods (defaults are 14 and 10 PCLKs)
+    sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+    sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+    #endif
+    #if defined HIGH_SPEED
+    // reduce timing budget to 20 ms (default is about 33 ms)
+    sensorsL0[i].setMeasurementTimingBudget(20000);
+    #elif defined HIGH_ACCURACY
+    // increase timing budget to 200 ms
+    sensorsL0[i].setMeasurementTimingBudget(200000);
+    #endif
     // Each sensor must have its address changed to a unique value other than
     // the default of 0x29 (except for the last one, which could be left at
     // the default). To make it simple, we'll just count up from 0x2A.
@@ -100,7 +112,9 @@ void setup()
       Serial.println(i);
       while (1);
     }
-
+    sensorsL1[i].setROISize(4, 4);
+    sensorsL1[i].setROICenter(195);
+   
     // Each sensor must have its address changed to a unique value other than
     // the default of 0x29 (except for the last one, which could be left at
     // the default). To make it simple, we'll just count up from 0x2A.
@@ -110,41 +124,82 @@ void setup()
   }
 }
 
-
-
-
 void loop()
 {
   for (uint8_t i = 0; i < sensorCountL0; i++)
   {
-    Serial.print(sensorsL0[i].readRangeContinuousMillimeters());
     if (sensorsL0[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-    Serial.print('\t');
+    else{
+    tof_holder = sensorsL0[i].readRangeSingleMillimeters();
+    switch (i){
+      case 0:
+        sensor1 = tof_holder;//TTM
+        break;
+      // case 1:
+      //   sensor2 = tof_holder;//BBR
+      //   break;
+      // case 2:
+      //   sensor3 = tof_holder;//BBL
+      //   break;
+      
+     
+
+
+    }
+    }
+
+   
   }
 
   for (uint8_t i = 0; i < sensorCountL1; i++)
   {
-    Serial.print(sensorsL1[i].read());
     if (sensorsL1[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-    Serial.print('\t');
+    tof_holder_2 = sensorsL1[i].readRangeContinuousMillimeters();
+   switch (i){
+      case 0:
+        sensor4 = tof_holder_2;//
+        break;
+      case 1:
+        sensor5 = tof_holder_2;//
+        break;
+      case 2:
+        sensor6 = tof_holder_2;//
+        break;
+      case 3:
+        sensor7 = tof_holder_2;//
+        break;
+   }
+  
   }
   
-  for (uint8_t i = 0; i < 2; i++) 
-  {
-    
-    if (sensorsL0[i].readRangeContinuousMillimeters() < 150 && sensorsL1[i].read() > 170) {
-      Serial.print("Weight Detected");
-      Serial.print('\t');
-    } else if (sensorsL0[i].readRangeContinuousMillimeters() < 150 && sensorsL1[i].read() < 170) {
-      Serial.print("Obstacle Detected");
-      Serial.print('\t');
-    } else {
-      Serial.print("Nothing Detected");
-      Serial.print('\t');
-    }
-    //distance = 
-  }
+  // if ((sensor6 - sensor3)>50){
+  //   Serial.print("weight detected on left)");
+  // }
+  // else{
+  //   Serial.print("No weight detected      ");
+  // }
   
-  Serial.println();
-}
+   Serial.print(sensor1);
+  //   Serial.print(" ");
+  //   Serial.print(sensor2);
+  //   Serial.print(" ");
+  //   Serial.print(sensor3);
+  //   Serial.print(" ");
+    // Serial.print(sensor4);
+    // Serial.print(" ");
+    // Serial.print(sensor5);
+    // Serial.print(" ");
+    // Serial.print(sensor6);
+    // Serial.print(" ");
+    // Serial.print(sensor7);
+    Serial.println(" ");
 
+  //   if ((sensor7 - sensor2)>50){
+  //   Serial.println("     weight detected on right)");
+  // }
+  // else{
+  //   Serial.println("     No weight detected      ");
+  // }
+  
+ 
+}
