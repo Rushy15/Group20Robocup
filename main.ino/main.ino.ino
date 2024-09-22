@@ -14,7 +14,6 @@ void setup() {
   navigation -> navigation_setup();
   sensor -> sensor_setup();
   Serial.println("Goodbye");
-
 }
 
 void loop() {
@@ -22,8 +21,8 @@ void loop() {
   sensor -> allTOFReadings();
   sensor -> us_Values();
 
-  // int l_us = sensor_main -> lUS;
-  // int r_us = sensor_main -> rUS;
+  int l_us = sensor -> lUS;
+  int r_us = sensor -> rUS;
 
   int m_tof = *(sensor -> mTOF);
   int bl_tof = *(sensor -> blTOF); 
@@ -34,19 +33,34 @@ void loop() {
   int entry = *(sensor -> entry);
   int barrel = *(sensor -> barrel);
 
+  Serial.print("Middle TOF: ");
   Serial.print(m_tof);
   Serial.print('\t');
+  Serial.print("Entry: ");
   Serial.print(entry);
   Serial.print('\t');
+  Serial.print("Barrel: ");
   Serial.print(barrel);
   Serial.print('\t');
-  
+
+  Serial.print("Bottom Left: ");
   Serial.print(bl_tof);
   Serial.print('\t');
+  Serial.print("Top Left: ");
   Serial.print(tl_tof);
   Serial.print('\t');
+  Serial.print("Bottom Right: ");
   Serial.print(br_tof);
   Serial.print('\t');
-  Serial.println(tr_tof);
-  // navigation.loop();
+  Serial.print("Top Right: ");
+  Serial.print(tr_tof);
+  Serial.print('\t');
+
+  Serial.print("Left US: ");
+  Serial.print(l_us);
+  Serial.print('\t');
+  Serial.print("Right US: ");
+  Serial.println(r_us);
+
+  navigation->loop();
 }

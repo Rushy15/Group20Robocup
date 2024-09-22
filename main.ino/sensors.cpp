@@ -83,7 +83,7 @@ void Sensors::lrTOF_Setup()
       //Serial.println(i);
       while (1);
     }
-    sensorsL1[i].setROISize(5, 5);
+    sensorsL1[i].setROISize(6, 6);
     sensorsL1[i].setROICenter(195);
    
     // Each sensor must have its address changed to a unique value other than
@@ -121,18 +121,6 @@ void Sensors::us_Values()
 {
     lUS = ping(trigPinl, echoPinl); // Left US Sensor Reading
     rUS = ping(trigPinr, echoPinr); // Right US Sensor Reading
-
-    // Serial.print(" Left: ");
-    // Serial.print(distance_left);
-    // Serial.print('\t');
-    
-    // Serial.print(" Middle: ");
-    // Serial.print(front_tof);
-    // Serial.print('\t');
-    
-    // Serial.print(" Right: ");
-    // Serial.println(distance_right);
-    // Serial.print('\t');
 }
 
 

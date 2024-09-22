@@ -32,24 +32,29 @@ void Navigation::go_straight() {
   Lservo.writeMicroseconds(1100);  
 }
 
-void Navigation::loop() {
-  if (*(sensor->mTOF) < frontTOFLimit){///units in mm
-    if (sensor->rUS < sensor->lUS){
-      while (*(sensor->mTOF) < frontTOFMinimum){
+void Navigation::general_navigation()
+{
+  int mTOF = *(sensor->mTOF);
+  int l_us =  sensor->lUS;
+  int r_us = sensor->rUS;
+  if (mTOF < frontTOFLimit){///units in mm
+    if (r_us < l_us){
+      while (mTOF < frontTOFMinimum){
+        mTOF = *(sensor->mTOF);
+        l_us =  sensor->lUS;
+        r_us = sensor->rUS;
         sensor -> allTOFReadings();
-        // for (uint8_t i = 0; i < sensorCount; i++){
-        //     front_tof = sensors[i].readRangeContinuousMillimeters();
-        //     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-        //     }
+
         turn_left();
       }
     }
-    else if (sensor->rUS > sensor->lUS){
-      while (*(sensor->mTOF) < frontTOFMinimum){
+    else if (r_us > l_us){
+      while (mTOF < frontTOFMinimum){
+        mTOF = *(sensor->mTOF);
+        l_us =  sensor->lUS;
+        r_us = sensor->rUS;
         sensor -> allTOFReadings();
-        // for (uint8_t i = 0; i < sensorCount; i++) {
-        //     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }   
-      // }
+
         turn_right();
       }
     }
@@ -67,4 +72,46 @@ void Navigation::loop() {
   }
   
   delay(50);
+}
+
+void Navigation::weightDetection(bool direction)
+{
+  int tr = *(sensor->trTOF);
+  int br = *(sensor->brTOF);
+  int tl = *(sensor->tlTOF);
+  int bl = *(sensor->blTOF);
+
+  if (direction) {
+    while ((tr - br) > 200) {
+      tr = *(sensor->trTOF);
+      br = *(sensor->brTOF);
+      sensor->allTOFReadings();
+      turn_right();
+    } 
+  } else {
+    while ((tl - bl) > 200) {
+      tl = *(sensor->tlTOF);
+      bl = *(sensor->blTOF);
+      sensor -> allTOFReadings();
+      turn_left();
+    }
+  }
+}
+
+void Navigation::loop() 
+{
+  int tr = *(sensor->trTOF);
+  int br = *(sensor->brTOF);
+  int tl = *(sensor->tlTOF);
+  int bl = *(sensor->blTOF);
+
+  if (((tr - br) > 200) && (br < 1000)) {
+    Serial.print("Gotcha1");
+    weightDetection(1);
+  } else if (((tl - bl) > 200) && (bl < 1000)) {
+    Serial.print("Gotcha2");
+    weightDetection(0);
+  } else {
+    general_navigation();
+  }
 }
