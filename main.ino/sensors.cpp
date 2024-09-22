@@ -3,49 +3,109 @@
 #define IRQ_PIN 2
 #define XSHUT_PIN 3
 #define VL53L0X_ADDRESS_START 0x30
+#define VL53L1X_ADDRESS_START 0x35
 
-// Setup Function
-void Navigation::setup(){
+Sensors *sensor = nullptr;
+
+void Sensors::srTOF_Setup()
+{
+  // L0 Disable/reset all sensors by driving their XSHUT pins low.
+  for (uint8_t i = 0; i < sensorCountL0; i++)
+  {
+    io.pinMode(xshutPinsL0[i], OUTPUT);
+    io.digitalWrite(xshutPinsL0[i], LOW);
+  }
+
+  // L1 Disable/reset all sensors by driving their XSHUT pins low.
+  for (uint8_t i = 0; i < sensorCountL1; i++)
+  {
+    io.pinMode(xshutPinsL1[i], OUTPUT);
+    io.digitalWrite(xshutPinsL1[i], LOW);
+  }
+
+  // L0 Enable, initialize, and start each sensor, one by one.
+  for (uint8_t i = 0; i < sensorCountL0; i++)
+  {
+    // Stop driving this sensor's XSHUT low. This should allow the carrier
+    // board to pull it high. (We do NOT want to drive XSHUT high since it is
+    // not level shifted.) Then wait a bit for the sensor to start up.
+    //pinMode(xshutPins[i], INPUT);
+    io.digitalWrite(xshutPinsL0[i], HIGH);
+    delay(10);
+
+    sensorsL0[i].setTimeout(500);
+    if (!sensorsL0[i].init())
+    {
+      Serial.print("Failed to detect and initialize sensor L0 ");
+      Serial.print("NOT INITED");
+      Serial.println(i);
+      while (1);
+    }
+      #if defined LONG_RANGE
+    // lower the return signal rate limit (default is 0.25 MCPS)
+    sensorsL0[i].setSignalRateLimit(0.1);
+    // increase laser pulse periods (defaults are 14 and 10 PCLKs)
+    sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+    sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+    #endif
+    #if defined HIGH_SPEED
+    // reduce timing budget to 20 ms (default is about 33 ms)
+    sensorsL0[i].setMeasurementTimingBudget(20000);
+    #elif defined HIGH_ACCURACY
+    // increase timing budget to 200 ms
+    sensorsL0[i].setMeasurementTimingBudget(200000);
+    #endif
+    // Each sensor must have its address changed to a unique value other than
+    // the default of 0x29 (except for the last one, which could be left at
+    // the default). To make it simple, we'll just count up from 0x2A.
+    sensorsL0[i].setAddress(VL53L0X_ADDRESS_START + i);
+
+    sensorsL0[i].startContinuous(50);
+  }
+}
+
+void Sensors::lrTOF_Setup()
+{
+  // L1 Enable, initialize, and start each sensor, one by one.
+  for (uint8_t i = 0; i < sensorCountL1; i++)
+  {
+    // Stop driving this sensor's XSHUT low. This should allow the carrier
+    // board to pull it high. (We do NOT want to drive XSHUT high since it is
+    // not level shifted.) Then wait a bit for the sensor to start up.
+    //pinMode(xshutPins[i], INPUT);
+    io.digitalWrite(xshutPinsL1[i], HIGH);
+    delay(10);
+
+    sensorsL1[i].setTimeout(500);
+    if (!sensorsL1[i].init())
+    {
+      Serial.print("Failed to detect and initialize sensor L1 ");
+      //Serial.println(i);
+      while (1);
+    }
+    sensorsL1[i].setROISize(5, 5);
+    sensorsL1[i].setROICenter(195);
+   
+    // Each sensor must have its address changed to a unique value other than
+    // the default of 0x29 (except for the last one, which could be left at
+    // the default). To make it simple, we'll just count up from 0x2A.
+    sensorsL1[i].setAddress(VL53L1X_ADDRESS_START + i);
+
+    sensorsL1[i].startContinuous(50);
+  }
+}
+
+void Sensors::usSetup()
+{
+  // US 
   pinMode(trigPinr, OUTPUT);
   pinMode(echoPinr, INPUT);
   pinMode(trigPinl, OUTPUT);
   pinMode(echoPinl, INPUT);
-  
-  Rservo.attach(28);
-  Lservo.attach(8);
-
-  Serial.begin(115200);
-  io.begin(SX1509_ADDRESS);
-  Wire.begin();
-  Wire.setClock(400000);
-  
-  for (uint8_t i = 0; i < sensorCount; i++) {
-    io.pinMode(xshutPins[i], OUTPUT);
-    io.digitalWrite(xshutPins[i], LOW);
-  }
-  
-  for (uint8_t i = 0; i < sensorCount; i++)
-  {
-    io.digitalWrite(xshutPins[i], HIGH);
-    delay(10);
-    sensors[i].setTimeout(500);
-    
-    Serial.print(i);
-    if (!sensors[i].init())
-    {
-      Serial.print("Failed to detect and initialize sensor ");
-      Serial.println(i);
-      while (1);
-    }
-    
-    sensors[i].setAddress(VL53L0X_ADDRESS_START + i);
-    sensors[i].startContinuous(50);
-  }
-  
 }
 
 // Function for reading and writing from ultrasonic sensors 
-float Navigation::ping(int32_t trigPin, int32_t echoPin) {
+float Sensors::ping(int32_t trigPin, int32_t echoPin) {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
@@ -56,3 +116,92 @@ float Navigation::ping(int32_t trigPin, int32_t echoPin) {
   return distance;
 }
 
+
+void Sensors::us_Values()
+{
+    lUS = ping(trigPinl, echoPinl); // Left US Sensor Reading
+    rUS = ping(trigPinr, echoPinr); // Right US Sensor Reading
+
+    // Serial.print(" Left: ");
+    // Serial.print(distance_left);
+    // Serial.print('\t');
+    
+    // Serial.print(" Middle: ");
+    // Serial.print(front_tof);
+    // Serial.print('\t');
+    
+    // Serial.print(" Right: ");
+    // Serial.println(distance_right);
+    // Serial.print('\t');
+}
+
+
+void Sensors::srTOF_Values()
+{
+  for (uint8_t i = 0; i < sensorCountL0; i++)
+  {
+    if (sensorsL0[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+    else {
+      switch (i){
+        case 0:
+          srTOF_holder1 = sensorsL0[i].readRangeSingleMillimeters();
+          entry = &srTOF_holder1;// Middle tof reading
+          break;
+        case 1:
+          srTOF_holder2 = sensorsL0[i].readRangeSingleMillimeters();
+          barrel = &srTOF_holder2;// Entry channel tof reading
+          break;
+        case 2:
+          srTOF_holder3 = sensorsL0[i].readRangeSingleMillimeters();
+          mTOF = &srTOF_holder3;// Barrel tof reading
+          break;
+      }
+    }
+  }
+}
+
+void Sensors::lrTOF_Values()
+{
+  for (uint8_t i = 0; i < sensorCountL1; i++)
+  {
+    if (sensorsL1[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+    switch (i){
+      case 0:
+        lrTOF_holder1 = (sensorsL1[i].readRangeContinuousMillimeters());
+        blTOF = &lrTOF_holder1; // Bottom left tof reading
+        break;
+      case 1:
+        lrTOF_holder2 = (sensorsL1[i].readRangeContinuousMillimeters());
+        trTOF = &lrTOF_holder2; // Top right tof reading
+        break;
+      case 2:
+        lrTOF_holder3 = (sensorsL1[i].readRangeContinuousMillimeters());
+        brTOF = &lrTOF_holder3; // Bottom right tof reading
+        break;
+      case 3:
+        lrTOF_holder4 = (sensorsL1[i].readRangeContinuousMillimeters());
+        tlTOF = &lrTOF_holder4; // Top left tof reading
+        break;
+   }
+  }
+}
+
+void Sensors::allTOFReadings()
+{  
+  srTOF_Values();
+  lrTOF_Values();
+}
+
+// Setup Function
+void Sensors::sensor_setup()
+{
+  // Start of Init
+  Serial.begin(115200);
+  io.begin(SX1509_ADDRESS);
+  Wire.begin();
+  Wire.setClock(400000);
+  
+  srTOF_Setup();
+  lrTOF_Setup();
+  usSetup();
+}

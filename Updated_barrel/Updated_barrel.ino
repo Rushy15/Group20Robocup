@@ -64,7 +64,7 @@ void discard_all_weights() {
 
 
 void init_tof() {
-   Serial.begin(115200);
+  Serial.begin(115200);
   io.begin(SX1509_ADDRESS);
 
   Wire.begin();

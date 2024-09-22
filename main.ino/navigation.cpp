@@ -1,4 +1,5 @@
 #include "navigation.h"
+#include "sensors.h"
 
 #define frontTOFLimit 300
 #define frontTOFMinimum 500
@@ -7,9 +8,18 @@
 
 #define N 1500 // Neutral Speed
 
+Navigation *navigation = nullptr;
+
+void Navigation::navigation_setup()
+{
+  // Motor Setup
+  Rservo.attach(28);
+  Lservo.attach(8);
+}
+
 void Navigation::turn_left() {
     Rservo.writeMicroseconds(1950);  
-    Lservo.writeMicroseconds(1950); 
+    Lservo.writeMicroseconds(1950);
 }
 
 void Navigation::turn_right() {
@@ -23,58 +33,37 @@ void Navigation::go_straight() {
 }
 
 void Navigation::loop() {
-  for (uint8_t i = 0; i < sensorCount; i++)
-  {
-    distance_left = ping(trigPinl, echoPinl); // Left US Sensor Reading
-    
-    front_tof = sensors[i].readRangeContinuousMillimeters();
-
-    if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-    distance_right = ping(trigPinr, echoPinr); // Right US Sensor Reading
-
-    Serial.print(" Left: ");
-    Serial.print(distance_left);
-    Serial.print('\t');
-    
-    Serial.print(" Middle: ");
-    Serial.print(front_tof);
-    Serial.print('\t');
-    
-    Serial.print(" Right: ");
-    Serial.println(distance_right);
-    Serial.print('\t');
-  }
-
-  if (front_tof < frontTOFLimit){///units in mm
-    if (distance_right < distance_left){
-      while (front_tof < frontTOFMinimum){
-        for (uint8_t i = 0; i < sensorCount; i++){
-            front_tof = sensors[i].readRangeContinuousMillimeters();
-            if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-            }
-      turn_left();
+  if (*(sensor->mTOF) < frontTOFLimit){///units in mm
+    if (sensor->rUS < sensor->lUS){
+      while (*(sensor->mTOF) < frontTOFMinimum){
+        sensor -> allTOFReadings();
+        // for (uint8_t i = 0; i < sensorCount; i++){
+        //     front_tof = sensors[i].readRangeContinuousMillimeters();
+        //     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+        //     }
+        turn_left();
       }
     }
-    else if (distance_right > distance_left){
-      while (front_tof < frontTOFMinimum){
-        for (uint8_t i = 0; i < sensorCount; i++) {
-            front_tof = sensors[i].readRangeContinuousMillimeters();
-            if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }   
-      }
-      turn_right();
+    else if (sensor->rUS > sensor->lUS){
+      while (*(sensor->mTOF) < frontTOFMinimum){
+        sensor -> allTOFReadings();
+        // for (uint8_t i = 0; i < sensorCount; i++) {
+        //     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }   
+      // }
+        turn_right();
       }
     }
   }
-  else if (distance_right < lUSLimit) {///units in cm
+  else if (sensor->rUS < lUSLimit) {///units in cm
     turn_left();
   }
 
-   else if (distance_left < rUSLimit) {///units in cm
+   else if (sensor->lUS < rUSLimit) {///units in cm
     turn_right();
   }
 
   else {
-    go_straight();
+    go_straight(); 
   }
   
   delay(50);
