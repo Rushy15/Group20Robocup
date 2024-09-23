@@ -7,9 +7,12 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <movingAvg.h>
 
 #include <cstdlib>
 #include <cstdint>
+
+int get_entry() ;
 
 class Sensors {
   protected:
@@ -27,6 +30,11 @@ class Sensors {
     SX1509 io;
     VL53L0X sensorsL0[sensorCountL0];
     VL53L1X sensorsL1[sensorCountL1];
+
+    // static constexpr int sampleSize = 10;
+    // movingAvg lUS_Avg, rUS_Avg; // For Ultrasound 
+    // movingAvg mTOF_Avg, entry_Avg, barrel_Avg; // For VL53L0X
+    // movingAvg trTOF_Avg, tlTOF_Avg, brTOF_Avg, blTOF_Avg; // For VL53L1X
 
     void lrTOF_Setup();
     void srTOF_Setup();
@@ -49,6 +57,7 @@ class Sensors {
     int lrTOF_holder4;
 
     int lUS, rUS;
+
     int* mTOF;
     int* blTOF; 
     int* tlTOF;
@@ -62,7 +71,7 @@ class Sensors {
     float ping(int32_t trigPin, int32_t echoPin);
     void allTOFReadings();
     void us_Values();
-
+    
     void sensor_setup();
 };
 

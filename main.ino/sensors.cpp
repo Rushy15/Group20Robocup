@@ -4,8 +4,14 @@
 #define XSHUT_PIN 3
 #define VL53L0X_ADDRESS_START 0x30
 #define VL53L1X_ADDRESS_START 0x35
-
+#define SAMPLE_SIZE 10
+//#define LONG_RANGE
+//#define HIGH_SPEED
+//#define HIGH_ACCURACY
 Sensors *sensor = nullptr;
+movingAvg lUS_Avg(SAMPLE_SIZE), rUS_Avg(SAMPLE_SIZE); // For Ultrasound 
+movingAvg mTOF_Avg(SAMPLE_SIZE), entry_Avg(SAMPLE_SIZE), barrel_Avg(SAMPLE_SIZE); // For VL53L0X
+movingAvg trTOF_Avg(SAMPLE_SIZE), tlTOF_Avg(SAMPLE_SIZE), brTOF_Avg(SAMPLE_SIZE), blTOF_Avg(SAMPLE_SIZE); // For VL53L1X
 
 void Sensors::srTOF_Setup()
 {
@@ -61,6 +67,11 @@ void Sensors::srTOF_Setup()
     sensorsL0[i].setAddress(VL53L0X_ADDRESS_START + i);
 
     sensorsL0[i].startContinuous(50);
+
+  
+    mTOF_Avg.begin();
+    entry_Avg.begin();
+    barrel_Avg.begin();
   }
 }
 
@@ -83,8 +94,10 @@ void Sensors::lrTOF_Setup()
       //Serial.println(i);
       while (1);
     }
-    sensorsL1[i].setROISize(6, 6);
+    sensorsL1[i].setROISize(10, 6);
     sensorsL1[i].setROICenter(195);
+    sensorsL1[i].setDistanceMode(VL53L1X::Short);
+    
    
     // Each sensor must have its address changed to a unique value other than
     // the default of 0x29 (except for the last one, which could be left at
@@ -92,6 +105,11 @@ void Sensors::lrTOF_Setup()
     sensorsL1[i].setAddress(VL53L1X_ADDRESS_START + i);
 
     sensorsL1[i].startContinuous(50);
+
+    trTOF_Avg.begin(); 
+    tlTOF_Avg.begin();
+    brTOF_Avg.begin(); 
+    blTOF_Avg.begin();
   }
 }
 
@@ -102,20 +120,10 @@ void Sensors::usSetup()
   pinMode(echoPinr, INPUT);
   pinMode(trigPinl, OUTPUT);
   pinMode(echoPinl, INPUT);
-}
 
-// Function for reading and writing from ultrasonic sensors 
-float Sensors::ping(int32_t trigPin, int32_t echoPin) {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
-  distance = (duration * .0343) / 2;
-  return distance;
+  lUS_Avg.begin();
+  rUS_Avg.begin();
 }
-
 
 void Sensors::us_Values()
 {
@@ -123,24 +131,29 @@ void Sensors::us_Values()
     rUS = ping(trigPinr, echoPinr); // Right US Sensor Reading
 }
 
-
 void Sensors::srTOF_Values()
 {
   for (uint8_t i = 0; i < sensorCountL0; i++)
   {
-    if (sensorsL0[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+    if (sensorsL0[i].timeoutOccurred()) {
+       Serial.print(" TIMEOUT"); 
+       sensor -> sensor_setup();
+       }
     else {
       switch (i){
         case 0:
           srTOF_holder1 = sensorsL0[i].readRangeSingleMillimeters();
+          //srTOF_holder1 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           entry = &srTOF_holder1;// Middle tof reading
           break;
         case 1:
           srTOF_holder2 = sensorsL0[i].readRangeSingleMillimeters();
+          //srTOF_holder2 = barrel_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           barrel = &srTOF_holder2;// Entry channel tof reading
           break;
         case 2:
           srTOF_holder3 = sensorsL0[i].readRangeSingleMillimeters();
+          //srTOF_holder3 = mTOF_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           mTOF = &srTOF_holder3;// Barrel tof reading
           break;
       }
@@ -152,22 +165,25 @@ void Sensors::lrTOF_Values()
 {
   for (uint8_t i = 0; i < sensorCountL1; i++)
   {
-    if (sensorsL1[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+    if (sensorsL1[i].timeoutOccurred()) { 
+      Serial.print(" TIMEOUT"); 
+      sensor -> sensor_setup();
+      }
     switch (i){
       case 0:
-        lrTOF_holder1 = (sensorsL1[i].readRangeContinuousMillimeters());
+        lrTOF_holder1 = blTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
         blTOF = &lrTOF_holder1; // Bottom left tof reading
         break;
       case 1:
-        lrTOF_holder2 = (sensorsL1[i].readRangeContinuousMillimeters());
+        lrTOF_holder2 = trTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
         trTOF = &lrTOF_holder2; // Top right tof reading
         break;
       case 2:
-        lrTOF_holder3 = (sensorsL1[i].readRangeContinuousMillimeters());
+        lrTOF_holder3 = brTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
         brTOF = &lrTOF_holder3; // Bottom right tof reading
         break;
       case 3:
-        lrTOF_holder4 = (sensorsL1[i].readRangeContinuousMillimeters());
+        lrTOF_holder4 = tlTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
         tlTOF = &lrTOF_holder4; // Top left tof reading
         break;
    }
@@ -179,6 +195,28 @@ void Sensors::allTOFReadings()
   srTOF_Values();
   lrTOF_Values();
 }
+
+// Function for reading and writing from ultrasonic sensors 
+float Sensors::ping(int32_t trigPin, int32_t echoPin) {
+  digitalWrite(trigPin, LOW);
+  int start = micros();
+  while ((micros()-start) < 2){
+    }//delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  start = micros();
+  while ((micros()-start) < 10){    
+    }//delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration * .0343) / 2;
+  return distance;
+}
+
+int get_entry() 
+{
+  return *(sensor -> entry);
+}
+
 
 // Setup Function
 void Sensors::sensor_setup()

@@ -1,5 +1,6 @@
 #include "navigation.h"
 #include "sensors.h"
+#include "storage.h"
 
 #define frontTOFLimit 300
 #define frontTOFMinimum 500
@@ -44,6 +45,7 @@ void Navigation::general_navigation()
         l_us =  sensor->lUS;
         r_us = sensor->rUS;
         sensor -> allTOFReadings();
+        //storage->storing();
 
         turn_left();
       }
@@ -54,6 +56,7 @@ void Navigation::general_navigation()
         l_us =  sensor->lUS;
         r_us = sensor->rUS;
         sensor -> allTOFReadings();
+        //storage->storing();
 
         turn_right();
       }
@@ -82,17 +85,19 @@ void Navigation::weightDetection(bool direction)
   int bl = *(sensor->blTOF);
 
   if (direction) {
-    while ((tr - br) > 200) {
+    while ((tr - br) > 100) {
       tr = *(sensor->trTOF);
       br = *(sensor->brTOF);
       sensor->allTOFReadings();
+      //storage->storing();
       turn_right();
     } 
   } else {
-    while ((tl - bl) > 200) {
+    while ((tl - bl) > 100) {
       tl = *(sensor->tlTOF);
       bl = *(sensor->blTOF);
       sensor -> allTOFReadings();
+      //storage->storing();
       turn_left();
     }
   }
@@ -105,10 +110,10 @@ void Navigation::loop()
   int tl = *(sensor->tlTOF);
   int bl = *(sensor->blTOF);
 
-  if (((tr - br) > 200) && (br < 1000)) {
+  if (((tr - br) > 100) && (br < 1000)) {
     Serial.print("Gotcha1");
     weightDetection(1);
-  } else if (((tl - bl) > 200) && (bl < 1000)) {
+  } else if (((tl - bl) > 100) && (bl < 1000)) {
     Serial.print("Gotcha2");
     weightDetection(0);
   } else {

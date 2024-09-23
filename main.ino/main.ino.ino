@@ -1,5 +1,6 @@
 #include "navigation.h"
 #include "sensors.h"
+#include "storage.h"
 
 void setup() {
   // put your setup code here, to run once:
@@ -11,13 +12,19 @@ void setup() {
     navigation = new Navigation();
   } 
 
+  if (storage == nullptr) {
+    storage = new Storage();
+  } 
+
   navigation -> navigation_setup();
   sensor -> sensor_setup();
+  storage -> storage_setup();
   Serial.println("Goodbye");
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  int start = millis();
   sensor -> allTOFReadings();
   sensor -> us_Values();
 
@@ -60,7 +67,10 @@ void loop() {
   Serial.print(l_us);
   Serial.print('\t');
   Serial.print("Right US: ");
-  Serial.println(r_us);
+  Serial.print(r_us);
+  Serial.print(" Time taken millis: ");
+  Serial.println(millis()-start);
 
   navigation->loop();
+  //storage->storing();
 }

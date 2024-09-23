@@ -1,44 +1,19 @@
-#include <Servo.h>
+#include "sensors.h"
+#include "storage.h"
+// #include "navigation.h"
 
-#include <Servo.h>
+Storage *storage = nullptr;
 
-#include <VL53L0X.h>
-#include <SparkFunSX1509.h>
-#define VL53L0X_ADDRESS_START 0x30
-Servo myservo;  // create servo object to control a servo
-Servo drum;
-// twelve servo objects can be created on most boards
-const byte SX1509_ADDRESS = 0x3F;
-const uint8_t sensorCount = 1;
+void Storage::storage_setup() {
+  myservo.attach(30);  // attaches the servo on pin 9 to the servo object
+  myservo.write(93);  
+  drum.attach(29);  // attaches the servo on pin 9 to the servo object
+  drum.writeMicroseconds(1950);  
+  
+ 
+}
 
-
-
-#include <VL53L0X.h>
-#include <SparkFunSX1509.h>
-#define VL53L0X_ADDRESS_START 0x30
-Servo myservo;  // create servo object to control a servo
-Servo drum;
-// twelve servo objects can be created on most boards
-const byte SX1509_ADDRESS = 0x3F;
-const uint8_t sensorCount = 1;
-const uint8_t xshutPins[1] = {2};
-float state_w, distance, distance_left, distance_right, tof_distance,front_tof;
-int weights_collected = 0;
-int sensor = A7;
-int third_slot  = 180;   
-int second_slot  = 135;
-int first_slot = 89;
-int third_slot_discard = 76;
-int second_slot_discard = 36;        
-int first_slot_discard = 0 ;  
-int state_holder = 1;
-unsigned long Timer1,Timer2;  
-SX1509 io;
-VL53L0X sensors[sensorCount];
-
-
-
-void rotateDrum(int start,int dest) {
+void Storage::rotateDrum(int start,int dest) {
   int pos = 0;   
   if (start < dest){
   for (pos = start; pos <= dest; pos += 2) {
@@ -54,7 +29,7 @@ void rotateDrum(int start,int dest) {
 }
 }
 
-void discard_all_weights() {
+void Storage::discard_all_weights() {
 
   rotateDrum(third_slot,third_slot_discard); 
   delay(2500);
@@ -66,56 +41,15 @@ void discard_all_weights() {
   delay(2500); 
 }
 
+// void continueOperation()
+// {
+//   navigation->loop();
+//   // sensor -> allTOFReadings();  
+//   // sensor -> us_Values();
+// }
 
-void init_tof() {
-  Serial.begin(115200);
-  pinMode(sensor, INPUT);
-  io.begin(SX1509_ADDRESS);
-  Wire.begin();
-  Wire.setClock(400000);
-   for (uint8_t i = 0; i < sensorCount; i++)
-  {
-    io.pinMode(xshutPins[i], OUTPUT);
-    io.digitalWrite(xshutPins[i], LOW);
-  }
-  for (uint8_t i = 0; i < sensorCount; i++)
-  {
-    io.digitalWrite(xshutPins[i], HIGH);
-    delay(10);
-    sensors[i].setTimeout(500);
-    if (!sensors[i].init())
-    {
-      Serial.print("Failed to detect and initialize sensor ");
-      Serial.println(i);
-      while (1);
-    }
-    sensors[i].setAddress(VL53L0X_ADDRESS_START + i);
-    sensors[i].startContinuous(50);
-  }
-}
-void setup() {
-  myservo.attach(30);  // attaches the servo on pin 9 to the servo object
-  myservo.write(89);  
-  drum.attach(29);  // attaches the servo on pin 9 to the servo object
-  drum.writeMicroseconds(1950);  
-  init_tof();
- 
-}
-
-
-void loop() {
-  
-  //discard_all_weights();
-  
-  for (uint8_t i = 0; i < sensorCount; i++)
-  {
-    
-    Serial.print(" Distance: Middle ");
-    front_tof = sensors[i].readRangeContinuousMillimeters();
-    Serial.println(front_tof);
-    if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-    
-  }
+void Storage::storing()
+{
   int state = digitalRead(sensor);
   if ((state == LOW)) {
     int state_holder = 0;
@@ -123,8 +57,9 @@ void loop() {
   else {
     state_holder = 1;
   }
-  Serial.print(state_holder);
-  if (front_tof < 90) {
+  int enter_sensor = get_entry();
+  Serial.println(state_holder);
+  if (enter_sensor < 90) {
     Timer1 = millis();
     state = digitalRead(sensor);
     if ((state == LOW)) {
@@ -201,11 +136,5 @@ void loop() {
      }
     }
   }
-    
-  
 }
-  
 
-  
- 
-  
