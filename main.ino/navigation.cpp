@@ -42,23 +42,24 @@ void Navigation::general_navigation()
   if (mTOF < frontTOFLimit){///units in mm
     if (r_us < l_us){
       while (mTOF < frontTOFMinimum){
-        allTOFReadings();
         mTOF = get_mTOF();
         l_us =  get_lUS();
         r_us = get_rUS();
         //storage->storing();
         turn_left();
+        allTOFReadings();
+        allUSValues();
       }
     }
     else if (r_us > l_us){
       while (mTOF < frontTOFMinimum){
-        allTOFReadings();
         mTOF = get_mTOF();
         l_us =  get_lUS();
         r_us = get_rUS();
-        //storage->storing();
 
         turn_right();
+        allTOFReadings();
+        allUSValues();
       }
     }
   }
@@ -91,19 +92,23 @@ void Navigation::weightDetection(bool direction)
       allTOFReadings();
       //storage->storing();
       turn_right();
+      allTOFReadings();
+      allUSValues();
     } 
   } else {
     while ((tl - bl) > 100) {
       tl = get_tlTOF();
       bl = get_blTOF();
-      allTOFReadings();
+      
       //storage->storing();
       turn_left();
+      allTOFReadings();
+      allUSValues();
     }
   }
 }
 
-void Navigation::loop() 
+void nav_loop() 
 {
   int tr = get_trTOF();
   int br = get_brTOF();
@@ -112,11 +117,11 @@ void Navigation::loop()
 
   if (((tr - br) > 100) && (br < 1000)) {
     //Serial.print("Gotcha1");
-    weightDetection(1);
+    navigation -> weightDetection(1);
   } else if (((tl - bl) > 100) && (bl < 1000)) {
     //Serial.print("Gotcha2");
-    weightDetection(0);
+    navigation->weightDetection(0);
   } else {
-    general_navigation();
+    navigation->general_navigation();
   }
 }

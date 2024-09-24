@@ -10,15 +10,18 @@ class Storage {
   protected:
     Servo myservo;  // create servo object to control a servo
     Servo drum;
+
+    static const int sensor = A7;
+    static const int third_slot  = 180;   
+    static const int second_slot  = 135;
+    static const int first_slot = 93;
+    static const int third_slot_discard = 76;
+    static const int second_slot_discard = 36;        
+    static const int first_slot_discard = 0 ;  
+    
     int weights_collected = 0;
-    int sensor = A7;
-    int third_slot  = 180;   
-    int second_slot  = 135;
-    int first_slot = 93;
-    int third_slot_discard = 76;
-    int second_slot_discard = 36;        
-    int first_slot_discard = 0 ;  
     int state_holder = 1;
+    
     unsigned long Timer1,currTimer;  
     unsigned long prevTimer = 0;
     // int front_tof;
@@ -29,6 +32,9 @@ class Storage {
     void rotateDrum(int start,int dest);
     void discard_all_weights();
     void continue_Operation();
+
+    bool weightInBarrel();
+    int psState(int state);
     void storing();
 };
 

@@ -18,27 +18,27 @@ void setup() {
 
   navigation -> navigation_setup();
   sensor -> sensor_setup();
-  storage -> storage_setup();
-  Serial.println("Goodbye");
+  // storage -> storage_setup();
+  // Serial.println("Goodbye");
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  int start = millis();
   allTOFReadings();
   allUSValues();
+  
+
+  int start = millis();
 
   int l_us = get_lUS();
   int r_us =  get_rUS();
-
-  int m_tof = *(sensor -> mTOF);
-  int bl_tof = *(sensor -> blTOF); 
-  int tl_tof = *(sensor -> tlTOF); 
-  int br_tof = *(sensor -> brTOF); 
-  int tr_tof = *(sensor -> trTOF);
-
-  int entry = *(sensor -> entry);
-  int barrel = *(sensor -> barrel);
+  int m_tof = get_mTOF();
+  int bl_tof = get_blTOF(); 
+  int tl_tof = get_tlTOF(); 
+  int br_tof = get_brTOF(); 
+  int tr_tof = get_trTOF();
+  int entry = get_entry();
+  int barrel = get_barrel();
 
   Serial.print("Middle TOF: ");
   Serial.print(m_tof);
@@ -49,7 +49,6 @@ void loop() {
   Serial.print("Barrel: ");
   Serial.print(barrel);
   Serial.print('\t');
-
   Serial.print("Bottom Left: ");
   Serial.print(bl_tof);
   Serial.print('\t');
@@ -62,14 +61,14 @@ void loop() {
   Serial.print("Top Right: ");
   Serial.print(tr_tof);
   Serial.print('\t');
-
   Serial.print("Left US: ");
   Serial.print(l_us);
   Serial.print('\t');
   Serial.print("Right US: ");
   Serial.print(r_us);
-  navigation->loop();
-  //storage->storing();
+  
+  nav_loop();
+
   Serial.print(" Time taken millis: ");
   Serial.println(millis()-start);
 
