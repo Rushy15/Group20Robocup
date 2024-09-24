@@ -18,16 +18,16 @@ const byte SX1509_ADDRESS = 0x3F;
 #define VL53L0X_ADDRESS_START 0x30
 #define VL53L1X_ADDRESS_START 0x35
 //#define LONG_RANGE
-#define HIGH_SPEED
+//#define HIGH_SPEED
 //#define HIGH_ACCURACY
 // The number of sensors in your system.
-const uint8_t sensorCountL0 = 1;
+const uint8_t sensorCountL0 = 3;
 const uint8_t sensorCountL1 = 4;
 int sensor1,sensor2,sensor3,sensor4,sensor5,sensor6,sensor7,tof_holder,tof_holder_2 = 0;
 
 // The Arduino pin connected to the XSHUT pin of each sensor.
-const uint8_t xshutPinsL0[sensorCountL0] = {0};
-const uint8_t xshutPinsL1[sensorCountL1] = {3,4,5,6};
+const uint8_t xshutPinsL0[sensorCountL0] = {1,2};
+const uint8_t xshutPinsL1[sensorCountL1] = {4,5,6,7};
 
 SX1509 io; // Create an SX1509 object to be used throughout
 VL53L0X sensorsL0[sensorCountL0];
@@ -73,20 +73,10 @@ void setup()
       Serial.println(i);
       while (1);
     }
-      #if defined LONG_RANGE
-    // lower the return signal rate limit (default is 0.25 MCPS)
-    sensorsL0[i].setSignalRateLimit(0.1);
-    // increase laser pulse periods (defaults are 14 and 10 PCLKs)
-    sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-    sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-    #endif
-    #if defined HIGH_SPEED
+     
+   
     // reduce timing budget to 20 ms (default is about 33 ms)
     sensorsL0[i].setMeasurementTimingBudget(20000);
-    #elif defined HIGH_ACCURACY
-    // increase timing budget to 200 ms
-    sensorsL0[i].setMeasurementTimingBudget(200000);
-    #endif
     // Each sensor must have its address changed to a unique value other than
     // the default of 0x29 (except for the last one, which could be left at
     // the default). To make it simple, we'll just count up from 0x2A.
@@ -114,6 +104,8 @@ void setup()
     }
     sensorsL1[i].setROISize(4, 4);
     sensorsL1[i].setROICenter(195);
+    sensorsL1[i].setDistanceMode(VL53L1X::Short);
+    sensorsL1[i].setMeasurementTimingBudget(20000);
    
     // Each sensor must have its address changed to a unique value other than
     // the default of 0x29 (except for the last one, which could be left at
@@ -126,21 +118,22 @@ void setup()
 
 void loop()
 {
+  int start = millis();
   for (uint8_t i = 0; i < sensorCountL0; i++)
   {
     if (sensorsL0[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
     else{
-    tof_holder = sensorsL0[i].readRangeSingleMillimeters();
+    tof_holder = sensorsL0[i].readRangeContinuousMillimeters();
     switch (i){
       case 0:
         sensor1 = tof_holder;//TTM
         break;
-      // case 1:
-      //   sensor2 = tof_holder;//BBR
-      //   break;
-      // case 2:
-      //   sensor3 = tof_holder;//BBL
-      //   break;
+      case 1:
+        sensor2 = tof_holder;//BBR
+        break;
+      case 2:
+        sensor3 = tof_holder;//BBL
+        break;
       
      
 
@@ -180,19 +173,21 @@ void loop()
   // }
   
    Serial.print(sensor1);
-  //   Serial.print(" ");
-  //   Serial.print(sensor2);
-  //   Serial.print(" ");
-  //   Serial.print(sensor3);
-  //   Serial.print(" ");
-    // Serial.print(sensor4);
-    // Serial.print(" ");
-    // Serial.print(sensor5);
-    // Serial.print(" ");
-    // Serial.print(sensor6);
-    // Serial.print(" ");
-    // Serial.print(sensor7);
-    Serial.println(" ");
+    Serial.print(" ");
+    Serial.print(sensor2);
+    Serial.print(" ");
+    Serial.print(sensor3);
+    Serial.print(" ");
+    Serial.print(sensor4);
+    Serial.print(" ");
+    Serial.print(sensor5);
+    Serial.print(" ");
+    Serial.print(sensor6);
+    Serial.print(" ");
+    Serial.print(sensor7);
+    Serial.print(" ");
+    Serial.print(" Time taken millis: ");
+  Serial.println(millis()-start);
 
   //   if ((sensor7 - sensor2)>50){
   //   Serial.println("     weight detected on right)");

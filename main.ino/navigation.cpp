@@ -35,38 +35,38 @@ void Navigation::go_straight() {
 
 void Navigation::general_navigation()
 {
-  int mTOF = *(sensor->mTOF);
-  int l_us =  sensor->lUS;
-  int r_us = sensor->rUS;
+  int mTOF = get_mTOF();
+  int l_us =  get_lUS();
+  int r_us = get_rUS();
+
   if (mTOF < frontTOFLimit){///units in mm
     if (r_us < l_us){
       while (mTOF < frontTOFMinimum){
-        mTOF = *(sensor->mTOF);
-        l_us =  sensor->lUS;
-        r_us = sensor->rUS;
-        sensor -> allTOFReadings();
+        allTOFReadings();
+        mTOF = get_mTOF();
+        l_us =  get_lUS();
+        r_us = get_rUS();
         //storage->storing();
-
         turn_left();
       }
     }
     else if (r_us > l_us){
       while (mTOF < frontTOFMinimum){
-        mTOF = *(sensor->mTOF);
-        l_us =  sensor->lUS;
-        r_us = sensor->rUS;
-        sensor -> allTOFReadings();
+        allTOFReadings();
+        mTOF = get_mTOF();
+        l_us =  get_lUS();
+        r_us = get_rUS();
         //storage->storing();
 
         turn_right();
       }
     }
   }
-  else if (sensor->rUS < lUSLimit) {///units in cm
+  else if (r_us < rUSLimit) {///units in cm
     turn_left();
   }
 
-   else if (sensor->lUS < rUSLimit) {///units in cm
+   else if (l_us < lUSLimit) {///units in cm
     turn_right();
   }
 
@@ -79,24 +79,24 @@ void Navigation::general_navigation()
 
 void Navigation::weightDetection(bool direction)
 {
-  int tr = *(sensor->trTOF);
-  int br = *(sensor->brTOF);
-  int tl = *(sensor->tlTOF);
-  int bl = *(sensor->blTOF);
+  int tr = get_trTOF();
+  int br = get_brTOF();
+  int tl = get_tlTOF();
+  int bl = get_blTOF();
 
   if (direction) {
     while ((tr - br) > 100) {
-      tr = *(sensor->trTOF);
-      br = *(sensor->brTOF);
-      sensor->allTOFReadings();
+      tr = get_trTOF();
+      br = get_brTOF();
+      allTOFReadings();
       //storage->storing();
       turn_right();
     } 
   } else {
     while ((tl - bl) > 100) {
-      tl = *(sensor->tlTOF);
-      bl = *(sensor->blTOF);
-      sensor -> allTOFReadings();
+      tl = get_tlTOF();
+      bl = get_blTOF();
+      allTOFReadings();
       //storage->storing();
       turn_left();
     }
@@ -105,16 +105,16 @@ void Navigation::weightDetection(bool direction)
 
 void Navigation::loop() 
 {
-  int tr = *(sensor->trTOF);
-  int br = *(sensor->brTOF);
-  int tl = *(sensor->tlTOF);
-  int bl = *(sensor->blTOF);
+  int tr = get_trTOF();
+  int br = get_brTOF();
+  int tl = get_tlTOF();
+  int bl = get_blTOF();
 
   if (((tr - br) > 100) && (br < 1000)) {
-    Serial.print("Gotcha1");
+    //Serial.print("Gotcha1");
     weightDetection(1);
   } else if (((tl - bl) > 100) && (bl < 1000)) {
-    Serial.print("Gotcha2");
+    //Serial.print("Gotcha2");
     weightDetection(0);
   } else {
     general_navigation();

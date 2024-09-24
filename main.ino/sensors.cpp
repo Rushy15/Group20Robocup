@@ -97,6 +97,7 @@ void Sensors::lrTOF_Setup()
     sensorsL1[i].setROISize(10, 6);
     sensorsL1[i].setROICenter(195);
     sensorsL1[i].setDistanceMode(VL53L1X::Short);
+    sensorsL1[i].setMeasurementTimingBudget(20000);
     
    
     // Each sensor must have its address changed to a unique value other than
@@ -190,10 +191,15 @@ void Sensors::lrTOF_Values()
   }
 }
 
-void Sensors::allTOFReadings()
+void allTOFReadings()
 {  
-  srTOF_Values();
-  lrTOF_Values();
+  sensor->srTOF_Values();
+  sensor->lrTOF_Values();
+}
+
+void allUSValues()
+{
+  sensor->us_Values();
 }
 
 // Function for reading and writing from ultrasonic sensors 
@@ -212,13 +218,53 @@ float Sensors::ping(int32_t trigPin, int32_t echoPin) {
   return distance;
 }
 
-int get_entry() 
+/* Functions for getting sensor values */
+int get_lUS()
 {
-  return *(sensor -> entry);
+  return sensor->lUS;
 }
 
+int get_rUS()
+{
+  return sensor->rUS;
+}
 
-// Setup Function
+int get_mTOF()
+{
+  return *(sensor->mTOF);
+}
+
+int get_entry() 
+{
+  return *(sensor->entry);
+}
+
+int get_barrel()
+{
+  return *(sensor->barrel);
+}
+
+int get_brTOF()
+{
+  return *(sensor->brTOF);
+}
+
+int get_trTOF()
+{
+  return *(sensor->trTOF);
+}
+
+int get_blTOF()
+{
+  return *(sensor->blTOF);
+}
+
+int get_tlTOF()
+{
+  return *(sensor->tlTOF);
+}
+
+/* Final Setup Function */
 void Sensors::sensor_setup()
 {
   // Start of Init

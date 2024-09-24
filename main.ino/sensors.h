@@ -12,15 +12,8 @@
 #include <cstdlib>
 #include <cstdint>
 
-int get_entry() ;
-
 class Sensors {
   protected:
-    static const int echoPinr = 2;
-    static const int trigPinr = 3;
-    static const int echoPinl = 4;
-    static const int trigPinl = 5;
-
     static const byte SX1509_ADDRESS = 0x3F;
     static const uint8_t sensorCountL0 = 3;
     static const uint8_t sensorCountL1 = 4;
@@ -36,14 +29,6 @@ class Sensors {
     // movingAvg mTOF_Avg, entry_Avg, barrel_Avg; // For VL53L0X
     // movingAvg trTOF_Avg, tlTOF_Avg, brTOF_Avg, blTOF_Avg; // For VL53L1X
 
-    void lrTOF_Setup();
-    void srTOF_Setup();
-
-    void usSetup();
-    void srTOF_Values();
-    void lrTOF_Values();
-
-  public:
     float duration, distance, distance_left, distance_right, front_tof;
     // static int sensor1,sensor2,sensor3,sensor4,sensor5,sensor6,sensor7,tof_holder,tof_holder_2 = 0;
     
@@ -56,12 +41,21 @@ class Sensors {
     int lrTOF_holder3;
     int lrTOF_holder4;
 
-    int lUS, rUS;
+    void lrTOF_Setup();
+    void srTOF_Setup();
+    void usSetup();
 
+  public:
+  static const int echoPinr = 2;
+    static const int trigPinr = 3;
+    static const int echoPinl = 4;
+    static const int trigPinl = 5;
+    
+    int lUS, rUS;
     int* mTOF;
     int* blTOF; 
     int* tlTOF;
-    int *brTOF;
+    int* brTOF;
     int* trTOF; // VL53L1X for detceting if there are weights 
 
     int* barrel; // Short-range TOF for weight detection in the barrel
@@ -69,11 +63,35 @@ class Sensors {
     int ps = 1; // Proximity Sensor value
 
     float ping(int32_t trigPin, int32_t echoPin);
-    void allTOFReadings();
-    void us_Values();
-    
     void sensor_setup();
+    void srTOF_Values();
+    void lrTOF_Values();
+    void us_Values();
 };
+
+void allTOFReadings();
+void allUSValues();
+
+/*
+Setter Functions
+*/
+void set_(int value);
+
+
+/*
+Getter Functions for the distance sensor values
+*/
+int get_lUS();
+int get_rUS();
+
+int get_mTOF();
+int get_entry();
+int get_barrel();
+
+int get_brTOF();
+int get_trTOF();
+int get_blTOF();
+int get_tlTOF();
 
 extern Sensors *sensor;
 

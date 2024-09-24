@@ -25,11 +25,11 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   int start = millis();
-  sensor -> allTOFReadings();
-  sensor -> us_Values();
+  allTOFReadings();
+  allUSValues();
 
-  int l_us = sensor -> lUS;
-  int r_us = sensor -> rUS;
+  int l_us = get_lUS();
+  int r_us =  get_rUS();
 
   int m_tof = *(sensor -> mTOF);
   int bl_tof = *(sensor -> blTOF); 
@@ -68,9 +68,10 @@ void loop() {
   Serial.print('\t');
   Serial.print("Right US: ");
   Serial.print(r_us);
+  navigation->loop();
+  //storage->storing();
   Serial.print(" Time taken millis: ");
   Serial.println(millis()-start);
 
-  navigation->loop();
-  //storage->storing();
+ 
 }
