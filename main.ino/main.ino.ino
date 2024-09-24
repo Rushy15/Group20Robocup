@@ -28,7 +28,7 @@ void loop() {
   allUSValues();
   
 
-  int start = millis();
+  
 
   int l_us = get_lUS();
   int r_us =  get_rUS();
@@ -40,37 +40,37 @@ void loop() {
   int entry = get_entry();
   int barrel = get_barrel();
 
-  Serial.print("Middle TOF: ");
-  Serial.print(m_tof);
-  Serial.print('\t');
-  Serial.print("Entry: ");
-  Serial.print(entry);
-  Serial.print('\t');
-  Serial.print("Barrel: ");
-  Serial.print(barrel);
-  Serial.print('\t');
-  Serial.print("Bottom Left: ");
-  Serial.print(bl_tof);
-  Serial.print('\t');
-  Serial.print("Top Left: ");
-  Serial.print(tl_tof);
-  Serial.print('\t');
-  Serial.print("Bottom Right: ");
-  Serial.print(br_tof);
-  Serial.print('\t');
-  Serial.print("Top Right: ");
-  Serial.print(tr_tof);
-  Serial.print('\t');
-  Serial.print("Left US: ");
-  Serial.print(l_us);
-  Serial.print('\t');
-  Serial.print("Right US: ");
-  Serial.print(r_us);
-  
+  // Serial.print("Middle TOF: ");
+  // Serial.print(m_tof);
+  // Serial.print('\t');
+  // Serial.print("Entry: ");
+  // Serial.print(entry);
+  // Serial.print('\t');
+  // Serial.print("Barrel: ");
+  // Serial.print(barrel);
+  // Serial.print('\t');
+  // Serial.print("Bottom Left: ");
+  // Serial.print(bl_tof);
+  // Serial.print('\t');
+  // Serial.print("Top Left: ");
+  // Serial.print(tl_tof);
+  // Serial.print('\t');
+  // Serial.print("Bottom Right: ");
+  // Serial.print(br_tof);
+  // Serial.print('\t');
+  // Serial.print("Top Right: ");
+  // Serial.print(tr_tof);
+  // Serial.print('\t');
+  // Serial.print("Left US: ");
+  // Serial.print(l_us);
+  // Serial.print('\t');
+  // Serial.print("Right US: ");
+  // Serial.print(r_us);
+  int start = millis();
   nav_loop();
 
-  Serial.print(" Time taken millis: ");
-  Serial.println(millis()-start);
+  // Serial.print(" Time taken millis: ");
+  // Serial.println(millis()-start);
 
  
 }

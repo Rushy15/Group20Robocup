@@ -85,7 +85,7 @@ void Storage::storing()
     if ((state == LOW)) {
       state_holder = 0;
   }
-  
+    
     if ((state_holder == 0)) {
       Serial.print(millis()-Timer1);
       switch (weights_collected) {

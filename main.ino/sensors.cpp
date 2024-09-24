@@ -94,9 +94,9 @@ void Sensors::lrTOF_Setup()
       //Serial.println(i);
       while (1);
     }
-    sensorsL1[i].setROISize(10, 6);
+    sensorsL1[i].setROISize(20, 6);
     sensorsL1[i].setROICenter(195);
-    sensorsL1[i].setDistanceMode(VL53L1X::Short);
+    sensorsL1[i].setDistanceMode(VL53L1X::Medium);
     sensorsL1[i].setMeasurementTimingBudget(20000);
     
    
@@ -172,19 +172,19 @@ void Sensors::lrTOF_Values()
       }
     switch (i){
       case 0:
-        lrTOF_holder1 = blTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder1 = ((sensorsL1[i].readRangeContinuousMillimeters()));
         blTOF = &lrTOF_holder1; // Bottom left tof reading
         break;
       case 1:
-        lrTOF_holder2 = trTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder2 = ((sensorsL1[i].readRangeContinuousMillimeters()));
         trTOF = &lrTOF_holder2; // Top right tof reading
         break;
       case 2:
-        lrTOF_holder3 = brTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder3 = ((sensorsL1[i].readRangeContinuousMillimeters()));
         brTOF = &lrTOF_holder3; // Bottom right tof reading
         break;
       case 3:
-        lrTOF_holder4 = tlTOF_Avg.reading((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder4 = ((sensorsL1[i].readRangeContinuousMillimeters()));
         tlTOF = &lrTOF_holder4; // Top left tof reading
         break;
    }
