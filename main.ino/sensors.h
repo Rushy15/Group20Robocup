@@ -72,11 +72,6 @@ class Sensors {
 void allTOFReadings();
 void allUSValues();
 
-/*
-Setter Functions
-*/
-void set_(int value);
-
 
 /*
 Getter Functions for the distance sensor values

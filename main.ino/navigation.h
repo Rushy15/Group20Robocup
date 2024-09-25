@@ -14,6 +14,7 @@ class Navigation {
     void go_straight();
 
   public:
+    void stop();
     void general_navigation();
     void weightDetection(bool direction);
     void navigation_setup();

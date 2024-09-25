@@ -18,6 +18,12 @@ void Navigation::navigation_setup()
   Lservo.attach(8);
 }
 
+void Navigation::stop()
+{
+  Rservo.writeMicroseconds(1500);  
+  Lservo.writeMicroseconds(1500);
+}
+
 void Navigation::turn_left() {
     Rservo.writeMicroseconds(1950);  
     Lservo.writeMicroseconds(1950);
@@ -92,23 +98,22 @@ void Navigation::weightDetection(bool direction)
 
   if (direction) {
     while ((tr - br) > 65) {
+      turn_right();
       allTOFReadings();
       allUSValues();
       tr = get_trTOF();
       br = get_brTOF();
       //storage->storing();
-      turn_right();
       
     }
-     
   } else {
     while ((tl - bl) > 65) {
+      turn_left();
       allTOFReadings();
       allUSValues();
       tl = get_tlTOF();
       bl = get_blTOF();
       //storage->storing();
-      turn_left();
     }
   }
 }
