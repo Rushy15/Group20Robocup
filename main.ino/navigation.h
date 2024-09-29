@@ -11,9 +11,11 @@ class Navigation {
     
     void turn_left();
     void turn_right();
-    void go_straight();
-
+    
+    
   public:
+    void go_straight();
+    void reverse();
     void stop();
     void general_navigation();
     void weightDetection(bool direction);

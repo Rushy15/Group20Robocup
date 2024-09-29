@@ -39,6 +39,10 @@ void Navigation::go_straight() {
   Lservo.writeMicroseconds(1050);  
 }
 
+void Navigation::reverse() {
+  Rservo.writeMicroseconds(1050);  
+  Lservo.writeMicroseconds(1950);  
+}
 void Navigation::general_navigation()
 {
   // allTOFReadings();

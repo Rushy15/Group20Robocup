@@ -86,25 +86,30 @@ void loop() {
   // put your main code here, to run repeatedly:
   allTOFReadings();
   allUSValues();
-
+  int weight = storage -> weights_collected;
+  int stored = (storage -> finished_storing);
+  Serial.print(weight);
   printingSensorValues();
   
   /* State Machine for the Robot - Slow, but working */
-  nav_loop();
+  // nav_loop();
   
-  if (get_entry() < 200) {
+  bool isRemovingWeight = false;
+
+if (get_entry() < 200 && !isRemovingWeight) {  // Only check if not currently removing
+    isRemovingWeight = true;
     while (get_barrel() > 100) {
-      spinDrum();
-      // navigation->stop();
-      psState = read_psState();
-      allTOFReadings();
+        spinDrum();
+        psState = read_psState();
+        allTOFReadings();
     }
-  } 
-  
-  if (get_barrel() < 100) {
+}
+
+if (get_barrel() < 100 && isRemovingWeight) {
     stopDrum();
-    // Serial.print("In barrel");
     storing(psState);
-    nav_loop();
-  }
+    //nav_loop();
+    isRemovingWeight = false;  // Reset flag once the barrel has returned
+}
+
 }

@@ -6,7 +6,7 @@
 #define VL53L1X_ADDRESS_START 0x35
 #define SAMPLE_SIZE 10
 //#define LONG_RANGE
-//#define HIGH_SPEED
+#define HIGH_SPEED
 //#define HIGH_ACCURACY
 Sensors *sensor = nullptr;
 movingAvg lUS_Avg(SAMPLE_SIZE), rUS_Avg(SAMPLE_SIZE); // For Ultrasound 
@@ -144,7 +144,7 @@ void Sensors::srTOF_Values()
       switch (i){
         case 0:
           srTOF_holder1 = sensorsL0[i].readRangeSingleMillimeters();
-          //srTOF_holder1 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          srTOF_holder1 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           entry = &srTOF_holder1;// Middle tof reading
           break;
         case 1:

@@ -9,7 +9,7 @@
 class Storage {
   protected:
     Servo myservo;  // create servo object to control a servo
-
+    Servo drum;
     static const int third_slot  = 180;   
     static const int second_slot  = 135;
     static const int first_slot = 93;
@@ -29,6 +29,7 @@ class Storage {
     unsigned long Timer1, currTimer;  
     unsigned long prevTimer = 0;
     int weights_collected = 0;
+    int finished_storing = 0;
 
     void storage_setup();
     void continueOperation();
