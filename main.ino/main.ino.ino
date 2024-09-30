@@ -92,7 +92,7 @@ void loop() {
   printingSensorValues();
   
   /* State Machine for the Robot - Slow, but working */
-  // nav_loop();
+  nav_loop();
   
   bool isRemovingWeight = false;
 
@@ -108,7 +108,7 @@ if (get_entry() < 200 && !isRemovingWeight) {  // Only check if not currently re
 if (get_barrel() < 100 && isRemovingWeight) {
     stopDrum();
     storing(psState);
-    //nav_loop();
+    nav_loop();
     isRemovingWeight = false;  // Reset flag once the barrel has returned
 }
 
