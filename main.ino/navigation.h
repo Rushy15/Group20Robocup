@@ -8,6 +8,8 @@ class Navigation {
   protected:
     Servo Rservo;
     Servo Lservo;
+
+    bool endOfWall = false;
     
     void turn_left();
     void turn_right();
@@ -20,6 +22,7 @@ class Navigation {
     void general_navigation();
     void weightDetection(bool direction);
     void navigation_setup();
+    void wallFollowing();
 };
 
 void nav_loop();

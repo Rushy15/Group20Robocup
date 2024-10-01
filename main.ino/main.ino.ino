@@ -15,15 +15,15 @@ void printingSensorValues()
   int entry = get_entry();
   int barrel = get_barrel();
 
-  // Serial.print("Middle TOF: ");
-  // Serial.print(m_tof);
-  // Serial.print('\t');
-  Serial.print("Entry: ");
-  Serial.print(entry);
+  Serial.print("Middle TOF: ");
+  Serial.print(m_tof);
   Serial.print('\t');
-  Serial.print("Barrel: ");
-  Serial.print(barrel);
-  Serial.println('\t');
+  // Serial.print("Entry: ");
+  // Serial.print(entry);
+  // Serial.print('\t');
+  // Serial.print("Barrel: ");
+  // Serial.print(barrel);
+  // Serial.println('\t');
   // Serial.print("Bottom Left: ");
   // Serial.print(bl_tof);
   // Serial.print('\t');
@@ -36,11 +36,11 @@ void printingSensorValues()
   // Serial.print("Top Right: ");
   // Serial.print(tr_tof);
   // Serial.print('\t');
-  // Serial.print("Left US: ");
-  // Serial.print(l_us);
-  // Serial.print('\t');
-  // Serial.print("Right US: ");
-  // Serial.print(r_us);
+  Serial.print("Left US: ");
+  Serial.print(l_us);
+  Serial.print('\t');
+  Serial.print("Right US: ");
+  Serial.println(r_us);
   // int start = millis();
   // nav_loop();
   // if (weight_entered()) {
@@ -88,7 +88,7 @@ void loop() {
   allUSValues();
   int weight = storage -> weights_collected;
   int stored = (storage -> finished_storing);
-  Serial.print(weight);
+  // Serial.print(weight);
   printingSensorValues();
   
   /* State Machine for the Robot - Slow, but working */
@@ -96,20 +96,20 @@ void loop() {
   
   bool isRemovingWeight = false;
 
-if (get_entry() < 200 && !isRemovingWeight) {  // Only check if not currently removing
-    isRemovingWeight = true;
-    while (get_barrel() > 100) {
-        spinDrum();
-        psState = read_psState();
-        allTOFReadings();
-    }
-}
+  if (get_entry() < 200 && !isRemovingWeight) {  // Only check if not currently removing
+      isRemovingWeight = true;
+      while (get_barrel() > 100) {
+          spinDrum();
+          psState = read_psState();
+          allTOFReadings();
+      }
+  }
 
-if (get_barrel() < 100 && isRemovingWeight) {
-    stopDrum();
-    storing(psState);
-    nav_loop();
-    isRemovingWeight = false;  // Reset flag once the barrel has returned
-}
+  if (get_barrel() < 100 && isRemovingWeight) {
+      stopDrum();
+      storing(psState);
+      nav_loop();
+      isRemovingWeight = false;  // Reset flag once the barrel has returned
+  }
 
 }

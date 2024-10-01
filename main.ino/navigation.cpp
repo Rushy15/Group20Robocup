@@ -6,6 +6,8 @@
 #define frontTOFMinimum 500
 #define rUSLimit 16
 #define lUSLimit 16
+#define weightDetectingDistance 65
+#define topLevel_longRangeTOFLimit 100
 
 #define N 1500 // Neutral Speed
 
@@ -43,6 +45,7 @@ void Navigation::reverse() {
   Rservo.writeMicroseconds(1050);  
   Lservo.writeMicroseconds(1950);  
 }
+
 void Navigation::general_navigation()
 {
   // allTOFReadings();
@@ -50,7 +53,8 @@ void Navigation::general_navigation()
   int mTOF = get_mTOF();
   int l_us =  get_lUS();
   int r_us = get_rUS();
-  if (mTOF < frontTOFLimit){///units in mm
+
+  if (mTOF < frontTOFLimit){ //units in mm
     if (r_us < l_us){
       while (mTOF < frontTOFMinimum){
         allTOFReadings();
@@ -58,7 +62,6 @@ void Navigation::general_navigation()
         mTOF = get_mTOF();
         l_us =  get_lUS();
         r_us = get_rUS();
-        //storage->storing();
         turn_left();
       }
     }
@@ -73,11 +76,12 @@ void Navigation::general_navigation()
       }
     }
   }
-  else if (get_trTOF() < 150) {///units in cm
+
+  else if (get_trTOF() < topLevel_longRangeTOFLimit) {///units in cm
     turn_left();
   }
 
-   else if (get_tlTOF() < 150) {///units in cm
+   else if (get_tlTOF() < topLevel_longRangeTOFLimit) {///units in cm
     turn_right();
   }
   else if (get_rUS() < rUSLimit) {///units in cm
@@ -101,7 +105,7 @@ void Navigation::weightDetection(bool direction)
   int bl = get_blTOF();
 
   if (direction) {
-    while ((tr - br) > 65) {
+    while ((tr - br) > weightDetectingDistance) {
       turn_right();
       allTOFReadings();
       allUSValues();
@@ -111,7 +115,7 @@ void Navigation::weightDetection(bool direction)
       
     }
   } else {
-    while ((tl - bl) > 65) {
+    while ((tl - bl) > weightDetectingDistance) {
       turn_left();
       allTOFReadings();
       allUSValues();
@@ -121,6 +125,56 @@ void Navigation::weightDetection(bool direction)
     }
   }
 }
+
+void Navigation::wallFollowing()
+{
+  // allTOFReadings();
+  // allUSValues();
+  int mTOF = get_mTOF();
+  int l_us =  get_lUS();
+  int r_us = get_rUS();
+
+  /*
+  if the mTOF and rUS both are less than some distance, 
+  we want to turn left 
+
+  if the mTOF is sensing over some distance, and the rUS is detecting a wall on the right, 
+  then when the right rUS is not detetcing the wall anymore, turn right. 
+  */
+
+  if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
+    turn_left();
+  } else if ((mTOF > frontTOFLimit) && (r_us < rUSLimit)) {
+    endOfWall = false;
+    while (endOfWall == false) {
+      go_straight();
+
+      allTOFReadings();
+      allUSValues();
+      mTOF = get_mTOF();
+      l_us =  get_lUS();
+      r_us = get_rUS();
+
+      if (r_us > rUSLimit) {
+        turn_right();
+        endOfWall = true;
+      }
+  }
+  } else if ((mTOF < frontTOFLimit) && (l_us < lUSLimit)){
+    while (l_us < lUSLimit) {
+      turn_left();
+
+      allTOFReadings();
+      allUSValues();
+      mTOF = get_mTOF();
+      l_us =  get_lUS();
+      r_us = get_rUS();
+    }
+  } else {
+    go_straight();
+  }
+}
+
 
 void nav_loop() 
 {
@@ -137,5 +191,7 @@ void nav_loop()
     navigation->weightDetection(0);
   } else {
     navigation->general_navigation();
+    // navigation->wallFollowing();
   }
+  // navigation->wallFollowing();
 }

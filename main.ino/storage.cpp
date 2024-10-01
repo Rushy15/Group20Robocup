@@ -109,7 +109,7 @@ void Storage::removeWeights(int Timer1)
   while  ((millis() - Timer1) < 500){
      if ((millis()-Timer1) > 450){
       Serial.print(millis()-Timer1);
-      switch (storage->weights_collected) {
+      switch (weights_collected) {
       case 0:
         delay(1000);
         Serial.println("Fake weight detected1");
