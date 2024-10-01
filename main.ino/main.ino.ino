@@ -99,16 +99,17 @@ void loop() {
   if (get_entry() < 200 && !isRemovingWeight) {  // Only check if not currently removing
       isRemovingWeight = true;
       while (get_barrel() > 100) {
+          allTOFReadings();
+          nav_loop();
           spinDrum();
           psState = read_psState();
-          allTOFReadings();
       }
   }
 
   if (get_barrel() < 100 && isRemovingWeight) {
+    navigation -> stop();
       stopDrum();
       storing(psState);
-      nav_loop();
       isRemovingWeight = false;  // Reset flag once the barrel has returned
   }
 
