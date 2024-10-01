@@ -10,7 +10,7 @@
 //#define HIGH_ACCURACY
 Sensors *sensor = nullptr;
 movingAvg lUS_Avg(SAMPLE_SIZE), rUS_Avg(SAMPLE_SIZE); // For Ultrasound 
-movingAvg mTOF_Avg(SAMPLE_SIZE), entry_Avg(SAMPLE_SIZE), barrel_Avg(SAMPLE_SIZE); // For VL53L0X
+movingAvg mTOF_Avg(SAMPLE_SIZE), entry_Avg(SAMPLE_SIZE), barrel_Avg(SAMPLE_SIZE),entry2_Avg(SAMPLE_SIZE); // For VL53L0X
 movingAvg trTOF_Avg(SAMPLE_SIZE), tlTOF_Avg(SAMPLE_SIZE), brTOF_Avg(SAMPLE_SIZE), blTOF_Avg(SAMPLE_SIZE); // For VL53L1X
 
 void Sensors::srTOF_Setup()
@@ -71,6 +71,7 @@ void Sensors::srTOF_Setup()
   
     mTOF_Avg.begin();
     entry_Avg.begin();
+    entry2_Avg.begin();
     barrel_Avg.begin();
   }
 }
@@ -94,8 +95,15 @@ void Sensors::lrTOF_Setup()
       //Serial.println(i);
       while (1);
     }
-    sensorsL1[i].setROISize(20, 6);
-    sensorsL1[i].setROICenter(195);
+    if ((i == 1)||(i == 2)) {
+    sensorsL1[i].setROISize(7, 7);
+    sensorsL1[i].setROICenter(220);
+    }
+    else if ((i == 0)||(i == 3)) {
+    sensorsL1[i].setROISize(7, 7);
+    sensorsL1[i].setROICenter(164);
+    }
+
     sensorsL1[i].setDistanceMode(VL53L1X::Medium);
     sensorsL1[i].setMeasurementTimingBudget(20000);
     
@@ -144,18 +152,23 @@ void Sensors::srTOF_Values()
       switch (i){
         case 0:
           srTOF_holder1 = sensorsL0[i].readRangeSingleMillimeters();
-          srTOF_holder1 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
-          entry = &srTOF_holder1;// Middle tof reading
+          //srTOF_holder1 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          mTOF = &srTOF_holder1;// Middle tof reading
           break;
         case 1:
           srTOF_holder2 = sensorsL0[i].readRangeSingleMillimeters();
-          //srTOF_holder2 = barrel_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
-          barrel = &srTOF_holder2;// Entry channel tof reading
+          srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          entry = &srTOF_holder2;// Entry channel tof reading
           break;
         case 2:
           srTOF_holder3 = sensorsL0[i].readRangeSingleMillimeters();
           //srTOF_holder3 = mTOF_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
-          mTOF = &srTOF_holder3;// Barrel tof reading
+          barrel = &srTOF_holder3;// Barrel tof reading
+          break;
+        case 3:
+          srTOF_holder4 = sensorsL0[i].readRangeSingleMillimeters();
+          srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          entry2 = &srTOF_holder4;// Barrel tof reading
           break;
       }
     }
@@ -238,6 +251,12 @@ int get_entry()
 {
   return *(sensor->entry);
 }
+
+int get_entry2() 
+{
+  return *(sensor->entry2);
+}
+
 
 int get_barrel()
 {

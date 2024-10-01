@@ -15,9 +15,9 @@
 class Sensors {
   protected:
     static const byte SX1509_ADDRESS = 0x3F;
-    static const uint8_t sensorCountL0 = 3;
+    static const uint8_t sensorCountL0 = 4;
     static const uint8_t sensorCountL1 = 4;
-    const uint8_t xshutPinsL0[sensorCountL0] = {1,2};
+    const uint8_t xshutPinsL0[sensorCountL0] = {0,1,2,3};
     const uint8_t xshutPinsL1[sensorCountL1] = {4,5,6,7};
 
     SX1509 io;
@@ -35,6 +35,7 @@ class Sensors {
     int srTOF_holder1;
     int srTOF_holder2;
     int srTOF_holder3;
+    int srTOF_holder4;
     
     int lrTOF_holder1;
     int lrTOF_holder2;
@@ -60,6 +61,7 @@ class Sensors {
 
     int* barrel; // Short-range TOF for weight detection in the barrel
     int* entry; // Short-range TOF for weight detection in the channel
+    int* entry2; //second Short-range TOF for weight detection in the channel
     int ps = 1; // Proximity Sensor value
 
     float ping(int32_t trigPin, int32_t echoPin);
@@ -81,6 +83,7 @@ int get_rUS();
 
 int get_mTOF();
 int get_entry();
+int get_entry2();
 int get_barrel();
 
 int get_brTOF();

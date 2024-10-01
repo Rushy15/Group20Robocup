@@ -2,7 +2,7 @@
 #include "sensors.h"
 #include "storage.h"
 #include "collection.h"
-
+bool isRemovingWeight = false;
 void printingSensorValues()
 {
   int l_us = get_lUS();
@@ -13,29 +13,33 @@ void printingSensorValues()
   int br_tof = get_brTOF(); 
   int tr_tof = get_trTOF();
   int entry = get_entry();
+  int entry2 = get_entry2();
   int barrel = get_barrel();
 
   Serial.print("Middle TOF: ");
   Serial.print(m_tof);
   Serial.print('\t');
-  // Serial.print("Entry: ");
-  // Serial.print(entry);
-  // Serial.print('\t');
-  // Serial.print("Barrel: ");
-  // Serial.print(barrel);
-  // Serial.println('\t');
-  // Serial.print("Bottom Left: ");
-  // Serial.print(bl_tof);
-  // Serial.print('\t');
-  // Serial.print("Top Left: ");
-  // Serial.print(tl_tof);
-  // Serial.print('\t');
-  // Serial.print("Bottom Right: ");
-  // Serial.print(br_tof);
-  // Serial.print('\t');
-  // Serial.print("Top Right: ");
-  // Serial.print(tr_tof);
-  // Serial.print('\t');
+  Serial.print("Entry: ");
+  Serial.print(entry);
+  Serial.print('\t');
+  Serial.print("Entry2: ");
+  Serial.print(entry2);
+  Serial.print('\t');
+  Serial.print("Barrel: ");
+  Serial.print(barrel);
+  Serial.println('\t');
+  Serial.print("Bottom Left: ");
+  Serial.print(bl_tof);
+  Serial.print('\t');
+  Serial.print("Top Left: ");
+  Serial.print(tl_tof);
+  Serial.print('\t');
+  Serial.print("Bottom Right: ");
+  Serial.print(br_tof);
+  Serial.print('\t');
+  Serial.print("Top Right: ");
+  Serial.print(tr_tof);
+  Serial.print('\t');
   Serial.print("Left US: ");
   Serial.print(l_us);
   Serial.print('\t');
@@ -92,24 +96,25 @@ void loop() {
   printingSensorValues();
   
   /* State Machine for the Robot - Slow, but working */
-  nav_loop();
+  //nav_loop();
   
-  bool isRemovingWeight = false;
+
 
   if (get_entry() < 200 && !isRemovingWeight) {  // Only check if not currently removing
       isRemovingWeight = true;
       while (get_barrel() > 100) {
           allTOFReadings();
-          nav_loop();
+          //nav_loop();
           spinDrum();
           psState = read_psState();
       }
   }
 
   if (get_barrel() < 100 && isRemovingWeight) {
-    navigation -> stop();
+      navigation -> stop();
       stopDrum();
       storing(psState);
+      Serial.print("passing");
       isRemovingWeight = false;  // Reset flag once the barrel has returned
   }
 

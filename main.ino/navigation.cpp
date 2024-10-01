@@ -37,8 +37,8 @@ void Navigation::turn_right() {
 }
 
 void Navigation::go_straight() {
-  Rservo.writeMicroseconds(1950);  
-  Lservo.writeMicroseconds(1050);  
+  Rservo.writeMicroseconds(1850);  
+  Lservo.writeMicroseconds(1150);  
 }
 
 void Navigation::reverse() {
@@ -183,15 +183,27 @@ void nav_loop()
   int tl = get_tlTOF();
   int bl = get_blTOF();
 
-  if (((tr - br) > 65) && (br < 1300)) {
-    //Serial.print("Gotcha1");
-    navigation -> weightDetection(1);
-  } else if (((tl - bl) > 65) && (bl < 1300)) {
-    //Serial.print("Gotcha2");
-    navigation->weightDetection(0);
-  } else {
-    navigation->general_navigation();
-    // navigation->wallFollowing();
+  if ((((tr - br) > 65) && (br < 1300))||(((tl - bl) > 65) && (bl < 1300))){
+    while ((get_entry() > 190)||(get_mTOF() > frontTOFLimit)) {
+        allTOFReadings();
+        tr = get_trTOF();
+        br = get_brTOF();
+        tl = get_tlTOF();
+        bl = get_blTOF();
+        if (((tr - br) > 65) && (br < 1300)) {
+          //Serial.print("Gotcha1");
+          navigation -> weightDetection(1);
+        } else if (((tl - bl) > 65) && (bl < 1300)) {
+          //Serial.print("Gotcha2");
+          navigation->weightDetection(0);
+        }
+        else {
+          navigation -> go_straight();
+        }
+    }
   }
+   
+  navigation->general_navigation();
+  // navigation->wallFollowing();
   // navigation->wallFollowing();
 }
