@@ -6,7 +6,7 @@ Storage *storage = nullptr;
 
 void Storage::storage_setup() {
   myservo.attach(30);  // attaches the servo on pin 9 to the servo object
-  myservo.write(93);  
+  myservo.write(93);//93  
   // drum.writeMicroseconds(1950);  
 
   weights_collected = 0;
@@ -15,7 +15,7 @@ void Storage::storage_setup() {
 }
 
 void Storage::rotateDrum(int start, int dest) {
-  int pos = 0;   
+  int pos = 0;//0   
   if (start < dest){
   for (pos = start; pos <= dest; pos += 2) {
     myservo.write(pos);    

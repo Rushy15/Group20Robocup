@@ -96,15 +96,15 @@ void Sensors::lrTOF_Setup()
       while (1);
     }
     if ((i == 1)||(i == 2)) {
-    sensorsL1[i].setROISize(7, 7);
+    sensorsL1[i].setROISize(7, 4);
     sensorsL1[i].setROICenter(220);
     }
-    else if ((i == 0)||(i == 3)) {
-    sensorsL1[i].setROISize(7, 7);
+    if ((i == 0)||(i == 3)) {
+    sensorsL1[i].setROISize(7, 4);
     sensorsL1[i].setROICenter(164);
     }
 
-    sensorsL1[i].setDistanceMode(VL53L1X::Medium);
+    sensorsL1[i].setDistanceMode(VL53L1X::Short);
     sensorsL1[i].setMeasurementTimingBudget(20000);
     
    
@@ -151,23 +151,23 @@ void Sensors::srTOF_Values()
     else {
       switch (i){
         case 0:
-          srTOF_holder1 = sensorsL0[i].readRangeSingleMillimeters();
-          //srTOF_holder1 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          srTOF_holder1 = sensorsL0[i].readRangeContinuousMillimeters();
+          //srTOF_holder1 = mTOF_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           mTOF = &srTOF_holder1;// Middle tof reading
           break;
         case 1:
-          srTOF_holder2 = sensorsL0[i].readRangeSingleMillimeters();
-          srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          srTOF_holder2 = sensorsL0[i].readRangeContinuousMillimeters();
+          srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeContinuousMillimeters());
           entry = &srTOF_holder2;// Entry channel tof reading
           break;
         case 2:
-          srTOF_holder3 = sensorsL0[i].readRangeSingleMillimeters();
-          //srTOF_holder3 = mTOF_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          srTOF_holder3 = sensorsL0[i].readRangeContinuousMillimeters();
+          //srTOF_holder3 = barrel_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           barrel = &srTOF_holder3;// Barrel tof reading
           break;
         case 3:
-          srTOF_holder4 = sensorsL0[i].readRangeSingleMillimeters();
-          srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          srTOF_holder4 = sensorsL0[i].readRangeContinuousMillimeters();
+          srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeContinuousMillimeters());
           entry2 = &srTOF_holder4;// Barrel tof reading
           break;
       }
@@ -186,18 +186,22 @@ void Sensors::lrTOF_Values()
     switch (i){
       case 0:
         lrTOF_holder1 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder1 = blTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         blTOF = &lrTOF_holder1; // Bottom left tof reading
         break;
       case 1:
         lrTOF_holder2 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder2 = trTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         trTOF = &lrTOF_holder2; // Top right tof reading
         break;
       case 2:
         lrTOF_holder3 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder3 = brTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         brTOF = &lrTOF_holder3; // Bottom right tof reading
         break;
       case 3:
         lrTOF_holder4 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder4 = tlTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         tlTOF = &lrTOF_holder4; // Top left tof reading
         break;
    }
@@ -219,12 +223,10 @@ void allUSValues()
 float Sensors::ping(int32_t trigPin, int32_t echoPin) {
   digitalWrite(trigPin, LOW);
   int start = micros();
-  while ((micros()-start) < 2){
-    }//delayMicroseconds(2);
+  delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   start = micros();
-  while ((micros()-start) < 10){    
-    }//delayMicroseconds(10);
+  delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = (duration * .0343) / 2;

@@ -16,35 +16,35 @@ void printingSensorValues()
   int entry2 = get_entry2();
   int barrel = get_barrel();
 
-  Serial.print("Middle TOF: ");
-  Serial.print(m_tof);
-  Serial.print('\t');
-  Serial.print("Entry: ");
-  Serial.print(entry);
-  Serial.print('\t');
-  Serial.print("Entry2: ");
-  Serial.print(entry2);
-  Serial.print('\t');
-  Serial.print("Barrel: ");
-  Serial.print(barrel);
-  Serial.println('\t');
-  Serial.print("Bottom Left: ");
-  Serial.print(bl_tof);
-  Serial.print('\t');
-  Serial.print("Top Left: ");
-  Serial.print(tl_tof);
-  Serial.print('\t');
-  Serial.print("Bottom Right: ");
-  Serial.print(br_tof);
-  Serial.print('\t');
-  Serial.print("Top Right: ");
-  Serial.print(tr_tof);
-  Serial.print('\t');
-  Serial.print("Left US: ");
-  Serial.print(l_us);
-  Serial.print('\t');
-  Serial.print("Right US: ");
-  Serial.println(r_us);
+  // Serial.print("Middle TOF: ");
+  // Serial.print(m_tof);
+  // Serial.print('\t');
+  // Serial.print("Entry: ");
+  // Serial.print(entry);
+  // Serial.print('\t');
+  // Serial.print("Entry2: ");
+  // Serial.print(entry2);
+  // Serial.print('\t');
+  // Serial.print("Barrel: ");
+  // Serial.print(barrel);
+  // Serial.println('\t');
+  // Serial.print("Bottom Left: ");
+  // Serial.print(bl_tof);
+  // Serial.print('\t');
+  // Serial.print("Top Left: ");
+  // Serial.print(tl_tof);
+  // Serial.print('\t');
+  // Serial.print("Bottom Right: ");
+  // Serial.print(br_tof);
+  // Serial.print('\t');
+  // Serial.print("Top Right: ");
+  // Serial.print(tr_tof);
+  // Serial.print('\t');
+  // Serial.print("Left US: ");
+  // Serial.print(l_us);
+  // Serial.print('\t');
+  // Serial.print("Right US: ");
+  // Serial.println(r_us);
   // int start = millis();
   // nav_loop();
   // if (weight_entered()) {
@@ -89,22 +89,20 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   allTOFReadings();
-  allUSValues();
-  int weight = storage -> weights_collected;
-  int stored = (storage -> finished_storing);
+  //allUSValues();
   // Serial.print(weight);
-  printingSensorValues();
-  
+  //printingSensorValues();
+  //navigation -> go_straight();
   /* State Machine for the Robot - Slow, but working */
-  //nav_loop();
+  nav_loop();
   
 
 
-  if (get_entry() < 200 && !isRemovingWeight) {  // Only check if not currently removing
+  if ((get_entry() < 200||get_entry2() < 180) && !isRemovingWeight) {  // Only check if not currently removing
       isRemovingWeight = true;
       while (get_barrel() > 100) {
           allTOFReadings();
-          //nav_loop();
+          nav_loop();
           spinDrum();
           psState = read_psState();
       }
