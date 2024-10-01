@@ -7,7 +7,7 @@
 #define rUSLimit 16
 #define lUSLimit 16
 #define weightDetectingDistance 65
-#define topLevel_longRangeTOFLimit 100
+#define topLevel_longRangeTOFLimit 140
 
 #define N 1500 // Neutral Speed
 
