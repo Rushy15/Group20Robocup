@@ -4,7 +4,7 @@
 #define XSHUT_PIN 3
 #define VL53L0X_ADDRESS_START 0x30
 #define VL53L1X_ADDRESS_START 0x35
-#define SAMPLE_SIZE 10
+#define SAMPLE_SIZE 5
 //#define LONG_RANGE
 #define HIGH_SPEED
 //#define HIGH_ACCURACY

@@ -8,7 +8,10 @@
 #define lUSLimit 16
 #define weightDetectingDistance 65
 #define topLevel_longRangeTOFLimit 140
-
+#define FWR 1800
+#define FWL 1200
+#define BWR 1200  
+#define BWL 1800
 #define N 1500 // Neutral Speed
 
 Navigation *navigation = nullptr;
@@ -22,28 +25,28 @@ void Navigation::navigation_setup()
 
 void Navigation::stop()
 {
-  Rservo.writeMicroseconds(1500);  
-  Lservo.writeMicroseconds(1500);
+  Rservo.writeMicroseconds(N);  
+  Lservo.writeMicroseconds(N);
 }
 
 void Navigation::turn_left() {
-    Rservo.writeMicroseconds(1950);  
-    Lservo.writeMicroseconds(1950);
+    Rservo.writeMicroseconds(FWR);  
+    Lservo.writeMicroseconds(BWL);
 }
 
 void Navigation::turn_right() {
-    Rservo.writeMicroseconds(1050);  
-    Lservo.writeMicroseconds(1050); 
+    Rservo.writeMicroseconds(BWR);  
+    Lservo.writeMicroseconds(FWL); 
 }
 
 void Navigation::go_straight() {
-  Rservo.writeMicroseconds(1950);  
-  Lservo.writeMicroseconds(1050);  
+  Rservo.writeMicroseconds(FWR);  
+  Lservo.writeMicroseconds(FWL);  
 }
 
 void Navigation::reverse() {
-  Rservo.writeMicroseconds(1050);  
-  Lservo.writeMicroseconds(1950);  
+  Rservo.writeMicroseconds(BWR);  
+  Lservo.writeMicroseconds(BWL);  
 }
 
 void Navigation::general_navigation()
