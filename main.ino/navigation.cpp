@@ -8,10 +8,10 @@
 #define lUSLimit 16
 #define weightDetectingDistance 65
 #define topLevel_longRangeTOFLimit 140
-#define FWR 1800
-#define FWL 1200
-#define BWR 1200  
-#define BWL 1800
+#define FWR 1850
+#define FWL 1150
+#define BWR 1150  
+#define BWL 1850
 #define N 1500 // Neutral Speed
 
 Navigation *navigation = nullptr;

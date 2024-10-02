@@ -98,10 +98,10 @@ void loop() {
   isRemovingWeight = false; 
   if ((((get_entry() < 180)&&(get_entry() > 50))||((get_entry2() < 180)&&(get_entry2() > 20))) && !isRemovingWeight){  // Only check if not currently removing
       isRemovingWeight = true;
+      delay(1000);
+      navigation -> stop();
       int start = millis();
       int end;
-      delay(500);
-      navigation -> stop();
       while (get_barrel() > 100) {
           allTOFReadings();
           spinDrum();
