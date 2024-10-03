@@ -157,7 +157,7 @@ void Sensors::srTOF_Values()
           break;
         case 1:
           srTOF_holder2 = sensorsL0[i].readRangeSingleMillimeters();
-          srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          //srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           entry = &srTOF_holder2;// Entry channel tof reading
           break;
         case 2:
@@ -167,7 +167,7 @@ void Sensors::srTOF_Values()
           break;
         case 3:
           srTOF_holder4 = sensorsL0[i].readRangeSingleMillimeters();
-          srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
+          //srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           entry2 = &srTOF_holder4;// Barrel tof reading
           break;
       }

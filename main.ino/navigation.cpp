@@ -6,8 +6,9 @@
 #define frontTOFMinimum 500
 #define rUSLimit 16
 #define lUSLimit 16
-#define weightDetectingDistance 65
-#define topLevel_longRangeTOFLimit 140
+#define weightDetectingDistance 105
+#define weightDetectingDistanceMax 800
+#define topLevel_longRangeTOFLimit 170
 
 #define FWR 1850
 #define FWL 1150
@@ -111,6 +112,8 @@ void Navigation::weightDetection(bool direction)
   if (direction) {
     while ((tr - br) > weightDetectingDistance) {
       turn_right();
+      delay(600);
+      go_straight();
       allTOFReadings();
       allUSValues();
       tr = get_trTOF();
@@ -119,6 +122,8 @@ void Navigation::weightDetection(bool direction)
   } else {
     while ((tl - bl) > weightDetectingDistance) {
       turn_left();
+      delay(600);
+      go_straight();
       allTOFReadings();
       allUSValues();
       tl = get_tlTOF();
@@ -191,10 +196,10 @@ void nav_loop()
   //       br = get_brTOF();
   //       tl = get_tlTOF();
   //       bl = get_blTOF();
-        if (((tr - br) > 65) && (br < 1300)) {
+        if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
           //Serial.print("Gotcha1");
           navigation -> weightDetection(1);
-        } else if (((tl - bl) > 65) && (bl < 1300)) {
+        } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
           //Serial.print("Gotcha2");
           navigation->weightDetection(0);
         }

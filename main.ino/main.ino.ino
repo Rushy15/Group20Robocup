@@ -90,6 +90,7 @@ void setup() {
   storage -> storage_setup();
   collection -> collection_setup();
   Serial.println("Goodbye");
+  
 }
 
 void loop() {
@@ -99,13 +100,16 @@ void loop() {
   printingSensorValues();
   
   // State Machine for the robot
-  //nav_loop();
+  nav_loop();
   
-  isRemovingWeight = false; 
+  
   if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  // Only check if not currently removing
       isRemovingWeight = true;
+      navigation -> go_straight();
       delay(1000);
+      navigation -> stop();
+      delay(500);
       int start = millis();
       int end;
       while (get_barrel() > 100) {
@@ -118,7 +122,8 @@ void loop() {
             while ((end - start) < 14000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
               end = millis();
               reverseDrum();
-              //navigation -> reverse();
+              navigation -> reverse();
+              isRemovingWeight = false;
             }
             stopDrum();
             break;
