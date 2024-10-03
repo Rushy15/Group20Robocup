@@ -259,7 +259,6 @@ int get_entry2()
   return *(sensor->entry2);
 }
 
-
 int get_barrel()
 {
   return *(sensor->barrel);
@@ -285,7 +284,7 @@ int get_tlTOF()
   return *(sensor->tlTOF);
 }
 
-/* Final Setup Function */
+/* Final Setup Function for Sensors */
 void Sensors::sensor_setup()
 {
   // Start of Init

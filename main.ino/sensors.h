@@ -29,18 +29,17 @@ class Sensors {
     // movingAvg mTOF_Avg, entry_Avg, barrel_Avg; // For VL53L0X
     // movingAvg trTOF_Avg, tlTOF_Avg, brTOF_Avg, blTOF_Avg; // For VL53L1X
 
-    float duration, distance, distance_left, distance_right, front_tof;
-    // static int sensor1,sensor2,sensor3,sensor4,sensor5,sensor6,sensor7,tof_holder,tof_holder_2 = 0;
+    float distance, duration;
     
-    int srTOF_holder1;
-    int srTOF_holder2;
-    int srTOF_holder3;
-    int srTOF_holder4;
+    uint16_t srTOF_holder1;
+    uint16_t srTOF_holder2; // Entry Sensor Value Holder
+    uint16_t srTOF_holder3; // Barrel Sensor Value Holder
+    uint16_t srTOF_holder4; // Entry Sensor Value Holder
     
-    int lrTOF_holder1;
-    int lrTOF_holder2;
-    int lrTOF_holder3;
-    int lrTOF_holder4;
+    uint16_t lrTOF_holder1;
+    uint16_t lrTOF_holder2;
+    uint16_t lrTOF_holder3;
+    uint16_t lrTOF_holder4;
 
     void lrTOF_Setup();
     void srTOF_Setup();
@@ -53,25 +52,32 @@ class Sensors {
     static const int trigPinl = 5;
     
     int lUS, rUS;
-    int* mTOF;
-    int* blTOF; 
-    int* tlTOF;
-    int* brTOF;
-    int* trTOF; // VL53L1X for detceting if there are weights 
+    uint16_t* mTOF;
+    uint16_t* blTOF; 
+    uint16_t* tlTOF;
+    uint16_t* brTOF;
+    uint16_t* trTOF; // VL53L1X for detceting if there are weights 
 
-    int* barrel; // Short-range TOF for weight detection in the barrel
-    int* entry; // Short-range TOF for weight detection in the channel
-    int* entry2; //second Short-range TOF for weight detection in the channel
-    int ps = 1; // Proximity Sensor value
+    uint16_t* barrel; // Short-range TOF for weight detection in the barrel
+    uint16_t* entry; // Short-range TOF for weight detection in the channel
+    uint16_t* entry2; //second Short-range TOF for weight detection in the channel
+    uint8_t ps = 1; // Proximity Sensor value
 
     float ping(int32_t trigPin, int32_t echoPin);
-    void sensor_setup();
+    void sensor_setup(); 
     void srTOF_Values();
     void lrTOF_Values();
     void us_Values();
 };
 
-void allTOFReadings();
+/*
+Reading and updating all TOF sensor values
+*/
+void allTOFReadings(); 
+
+/*
+Reading and updating all ultrasonic sensor values
+*/
 void allUSValues();
 
 

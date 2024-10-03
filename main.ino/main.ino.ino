@@ -2,7 +2,9 @@
 #include "sensors.h"
 #include "storage.h"
 #include "collection.h"
+
 bool isRemovingWeight = false;
+
 void printingSensorValues()
 {
   int l_us = get_lUS();
@@ -60,7 +62,6 @@ void printingSensorValues()
   // }
 }
 
-
 void setup() {
   // put your setup code here, to run once:
   if (sensor == nullptr) {
@@ -79,52 +80,71 @@ void setup() {
     collection = new Collection();
   }
 
-  navigation -> navigation_setup();
-  sensor -> sensor_setup();
+  // navigation -> navigation_setup();
+  // sensor -> sensor_setup();
   storage -> storage_setup();
-  collection -> collection_setup();
+  // collection -> collection_setup();
   // Serial.println("Goodbye");
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  allTOFReadings();
-  allUSValues();
-  // Serial.print(weight);
-  printingSensorValues();
-  //navigation -> go_straight();
-  /* State Machine for the Robot - Slow, but working */
-  nav_loop();
-  isRemovingWeight = false; 
-  if ((((get_entry() < 180)&&(get_entry() > 50))||((get_entry2() < 180)&&(get_entry2() > 20))) && !isRemovingWeight){  // Only check if not currently removing
-      isRemovingWeight = true;
-      delay(1000);
-      navigation -> stop();
-      int start = millis();
-      int end;
-      while (get_barrel() > 100) {
-          allTOFReadings();
-          spinDrum();
-          psState = read_psState();
-          end = millis();
-          if ((end - start) > 12000) {
-            while ((end - start) < 14000) {
-              end = millis();
-              reverseDrum();
-              navigation -> reverse();
-            }
-            stopDrum();
-            break;
-          }
-      }
-  }
+  // allTOFReadings();
+  // allUSValues();
+  
+  // printingSensorValues();
+  
+  // // State Machine for the robot
+  // nav_loop();
+  // isRemovingWeight = false; 
+  // if ((((get_entry() < 180)&&(get_entry() > 50)) || ((get_entry2() < 180) && (get_entry2() > 20))) 
+  //       && !isRemovingWeight) {  // Only check if not currently removing
 
-  if (get_barrel() < 100 && isRemovingWeight) {
-      navigation -> stop();
-      stopDrum();
-      storing(psState);
-      Serial.print("passing");
-      isRemovingWeight = false;  // Reset flag once the barrel has returned
-  }
+  //     isRemovingWeight = true;
+  //     delay(1000);
+  //     navigation -> stop();
+  //     int start = millis();
+  //     int end;
+  //     while (get_barrel() > 100) {
+  //         allTOFReadings();
+  //         spinDrum();
+  //         psState = read_psState();
+  //         end = millis();
+  //         if ((end - start) > 12000) { // Check to see if nothing has been collected in 12 seconds
+  //           while ((end - start) < 14000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
+  //             end = millis();
+  //             reverseDrum();
+  //             navigation -> reverse();
+  //           }
+  //           stopDrum();
+  //           break;
+  //         }
+  //     }
+  // }
 
+  // if (get_barrel() < 100 && isRemovingWeight) {
+  //     navigation -> stop();
+  //     stopDrum();
+  //     storing(psState);
+  //     Serial.print("passing");
+  //     isRemovingWeight = false;  // Reset flag once the barrel has returned
+  // }
+
+  // while (max_capacity()) {
+  //   wallFollowing();
+  //   if (/*ADD COLOUR SENSOR CONDITION CODE*/) {
+  //     reset_capacity();
+  //   }
+  // }
+  
+  updateColourValues();
+
+  uint16_t r = getR();
+  uint16_t g = getR();
+  uint16_t b = getR();
+  Serial.print("\tR:\t"); 
+  Serial.print(r);
+  Serial.print("\tG:\t"); 
+  Serial.print(g);
+  Serial.print("\tB:\t"); 
+  Serial.println(b);
 }

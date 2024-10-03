@@ -8,10 +8,18 @@
 #define lUSLimit 16
 #define weightDetectingDistance 65
 #define topLevel_longRangeTOFLimit 140
+
 #define FWR 1850
 #define FWL 1150
 #define BWR 1150  
 #define BWL 1850
+
+#define FWR_SLOW 1780
+#define FWL_SLOW 1220
+#define BWR_SLOW 1220  
+#define BWL_SLOW 1780
+
+
 #define N 1500 // Neutral Speed
 
 Navigation *navigation = nullptr;
@@ -45,8 +53,8 @@ void Navigation::go_straight() {
 }
 
 void Navigation::reverse() {
-  Rservo.writeMicroseconds(BWR);  
-  Lservo.writeMicroseconds(BWL);  
+  Rservo.writeMicroseconds(BWR_SLOW);  
+  Lservo.writeMicroseconds(BWL_SLOW);  
 }
 
 void Navigation::general_navigation()
@@ -54,8 +62,6 @@ void Navigation::general_navigation()
   // allTOFReadings();
   // allUSValues();
   int mTOF = get_mTOF();
-  //int l_us =  get_lUS();
-  //int r_us = get_rUS();
   int tr_tof = get_trTOF();
   int tl_tof = get_tlTOF();
 
@@ -63,20 +69,14 @@ void Navigation::general_navigation()
     if (tr_tof < tl_tof){
       while (mTOF < frontTOFMinimum){
         allTOFReadings();
-        //allUSValues();
         mTOF = get_mTOF();
-        //l_us =  get_lUS();
-        //r_us = get_rUS();
         turn_left();
       }
     }
     else if (tr_tof > tl_tof){
       while (mTOF < frontTOFMinimum){
         allTOFReadings();
-        //allUSValues();
         mTOF = get_mTOF();
-        //l_us =  get_lUS();
-        //r_us = get_rUS();
         turn_right();
       }
     }
@@ -104,10 +104,10 @@ void Navigation::general_navigation()
 
 void Navigation::weightDetection(bool direction)
 {
-  int tr = get_trTOF();
-  int br = get_brTOF();
-  int tl = get_tlTOF();
-  int bl = get_blTOF();
+  uint16_t tr = get_trTOF();
+  uint16_t br = get_brTOF();
+  uint16_t tl = get_tlTOF();
+  uint16_t bl = get_blTOF();
 
   if (direction) {
     while ((tr - br) > weightDetectingDistance) {
@@ -115,9 +115,7 @@ void Navigation::weightDetection(bool direction)
       allTOFReadings();
       allUSValues();
       tr = get_trTOF();
-      br = get_brTOF();
-      //storage->storing();
-      
+      br = get_brTOF();      
     }
   } else {
     while ((tl - bl) > weightDetectingDistance) {
@@ -126,67 +124,66 @@ void Navigation::weightDetection(bool direction)
       allUSValues();
       tl = get_tlTOF();
       bl = get_blTOF();
-      //storage->storing();
     }
   }
 }
 
-void Navigation::wallFollowing()
-{
-  // allTOFReadings();
-  // allUSValues();
-  int mTOF = get_mTOF();
-  int l_us =  get_lUS();
-  int r_us = get_rUS();
+// void wallFollowing()
+// {
+//   // allTOFReadings();
+//   // allUSValues();
+//   uint16_t mTOF = get_mTOF();
+//   uint32_t l_us = get_lUS();
+//   uint32_t r_us = get_rUS();
 
-  /*
-  if the mTOF and rUS both are less than some distance, 
-  we want to turn left 
+//   /*
+//   if the mTOF and rUS both are less than some distance, 
+//   we want to turn left 
 
-  if the mTOF is sensing over some distance, and the rUS is detecting a wall on the right, 
-  then when the right rUS is not detetcing the wall anymore, turn right. 
-  */
+//   if the mTOF is sensing over some distance, and the rUS is detecting a wall on the right, 
+//   then when the right rUS is not detetcing the wall anymore, turn right. 
+//   */
 
-  if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
-    turn_left();
-  } else if ((mTOF > frontTOFLimit) && (r_us < rUSLimit)) {
-    endOfWall = false;
-    while (endOfWall == false) {
-      go_straight();
+//   if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
+//     navigation->turn_left();
+//   } else if ((mTOF > frontTOFLimit) && (r_us < rUSLimit)) {
+//     endOfWall = false;
+//     while (endOfWall == false) {
+//       navigation->go_straight();
+      
+//       allTOFReadings();
+//       allUSValues();
+//       mTOF = get_mTOF();
+//       l_us =  get_lUS();
+//       r_us = get_rUS();
 
-      allTOFReadings();
-      allUSValues();
-      mTOF = get_mTOF();
-      l_us =  get_lUS();
-      r_us = get_rUS();
+//       if (r_us > rUSLimit) {
+//         navigation->turn_right();
+//         endOfWall = true;
+//       }
+//   }
+//   } else if ((mTOF < frontTOFLimit) && (l_us < lUSLimit)){
+//     while (l_us < lUSLimit) {
+//       navigation->turn_left();
 
-      if (r_us > rUSLimit) {
-        turn_right();
-        endOfWall = true;
-      }
-  }
-  } else if ((mTOF < frontTOFLimit) && (l_us < lUSLimit)){
-    while (l_us < lUSLimit) {
-      turn_left();
-
-      allTOFReadings();
-      allUSValues();
-      mTOF = get_mTOF();
-      l_us =  get_lUS();
-      r_us = get_rUS();
-    }
-  } else {
-    go_straight();
-  }
-}
+//       allTOFReadings();
+//       allUSValues();
+//       mTOF = get_mTOF();
+//       l_us =  get_lUS();
+//       r_us = get_rUS();
+//     }
+//   } else {
+//     navigation->go_straight();
+//   }
+// }
 
 
 void nav_loop() 
 {
-  int tr = get_trTOF();
-  int br = get_brTOF();
-  int tl = get_tlTOF();
-  int bl = get_blTOF();
+  uint16_t tr = get_trTOF();
+  uint16_t br = get_brTOF();
+  uint16_t tl = get_tlTOF();
+  uint16_t bl = get_blTOF();
 
   // if ((((tr - br) > 65) && (br < 1300))||(((tl - bl) > 65) && (bl < 1300))){
   //   while ((get_entry() > 190)||(get_mTOF() > frontTOFLimit)) {

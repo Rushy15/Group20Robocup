@@ -4,18 +4,59 @@
 
 Storage *storage = nullptr;
 
+void Storage::colour_sensor_setup()
+{
+  Serial.println("Color View Test!");
+
+  if (tcs.begin()) 
+  Wire1.begin();
+
+  if (tcs.begin(0x29, &Wire1)){
+    Serial.println("Found sensor");
+  } else 
+  {
+    Serial.println("No TCS34725 found ... check your connections");
+    while (1); // halt!
+  }
+}
+
+void updateColourValues()
+{
+  storage->tcs.setInterrupt(false);      // turn on LED
+  delay(60);  // takes 50ms to read 
+  storage->tcs.getRawData(&(storage->red), &(storage->green), &(storage->blue), &(storage->clear));
+  storage->tcs.setInterrupt(true);  // turn off LED
+}
+
+uint16_t getR()
+{
+  // Serial.print("\tR:\t"); Serial.print(storage->r);
+  return storage->red;
+} 
+
+uint16_t getG()
+{
+  // Serial.print("\tG:\t"); Serial.print(storage->g);
+  return storage->green;
+} 
+
+uint16_t getB()
+{
+  // Serial.println("\tB:\t"); Serial.print(storage->b);
+  return storage->blue;
+}
+
 void Storage::storage_setup() {
+  colour_sensor_setup();
   myservo.attach(30);  // attaches the servo on pin 9 to the servo object
   myservo.write(93);//93  
   // drum.writeMicroseconds(1950);  
-
   weights_collected = 0;
-
   //attachInterrupt(0, storing(), CHANGE);
 }
 
 void Storage::rotateDrum(int start, int dest) {
-  int pos = 0;//0   
+  uint8_t pos = 0; //0   
   if (start < dest){
   for (pos = start; pos <= dest; pos += 2) {
     myservo.write(pos);    
@@ -42,25 +83,9 @@ void Storage::discard_all_weights() {
   delay(2500); 
 }
 
-// void continueOperation()
-// {
-//   navigation->loop();
-//   // sensor -> allTOFReadings();  
-//   // sensor -> us_Values();
-// }
-
-// bool Storage::weightInBarrel()
-// {
-//   if (get_barrel() < 80) {
-//     return 1;
-//   }
-//   return 0;
-// }
-
 int read_psState()
 {
-  int state = digitalRead(storage->sensor); // Gets the state that the proximity sensor senses
-  
+  uint8_t state = digitalRead(storage->sensor); // Gets the state that the proximity sensor senses
   if ((state == LOW)) {
     state = 0;
   }
@@ -69,7 +94,6 @@ int read_psState()
   }
   return state;
 }
-
 
 void Storage::storeWeights()
 {
@@ -98,8 +122,8 @@ void Storage::storeWeights()
           delay(500);
           psState = 1;
           delay(2500);
-          discard_all_weights();
-          weights_collected = 0;
+          // discard_all_weights();
+          weights_collected = 3;
           break;
       }
 }
@@ -142,8 +166,22 @@ void Storage::removeWeights(int Timer1)
     }
 }
 
+bool max_capacity()
+{
+  if (storage->weights_collected == 3) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
-void storing(int psState)
+void reset_capacity()
+{
+  storage->discard_all_weights();
+  storage->weights_collected = 0;
+}
+
+void storing(uint8_t psState)
 { 
   storage->Timer1 = millis();
   int Timer1 = storage->Timer1; 
@@ -151,10 +189,12 @@ void storing(int psState)
   Serial.print(psState);
   
   if (psState == 0) {
-    navigation -> stop();
+    // navigation -> stop();
+    nav_loop();
     storage->storeWeights();
   } else {
-    navigation -> stop();
+    // navigation -> stop();
+    nav_loop();
     storage->removeWeights(Timer1);
   }
 }
