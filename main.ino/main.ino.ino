@@ -16,9 +16,9 @@ void printingSensorValues()
   int entry2 = get_entry2();
   int barrel = get_barrel();
 
-  // Serial.print("Middle TOF: ");
-  // Serial.print(m_tof);
-  // Serial.print('\t');
+  Serial.print("Middle TOF: ");
+  Serial.print(m_tof);
+  Serial.print('\t');
   Serial.print("Entry: ");
   Serial.print(entry);
   Serial.print('\t');
@@ -27,24 +27,24 @@ void printingSensorValues()
   Serial.print('\t');
   Serial.print("Barrel: ");
   Serial.println(barrel);
-  // Serial.println('\t');
-  // Serial.print("Bottom Left: ");
-  // Serial.print(bl_tof);
-  // Serial.print('\t');
-  // Serial.print("Top Left: ");
-  // Serial.print(tl_tof);
-  // Serial.print('\t');
-  // Serial.print("Bottom Right: ");
-  // Serial.print(br_tof);
-  // Serial.print('\t');
-  // Serial.print("Top Right: ");
-  // Serial.print(tr_tof);
-  // Serial.print('\t');
-  // Serial.print("Left US: ");
-  // Serial.print(l_us);
-  // Serial.print('\t');
-  // Serial.print("Right US: ");
-  // Serial.println(r_us);
+  Serial.println('\t');
+  Serial.print("Bottom Left: ");
+  Serial.print(bl_tof);
+  Serial.print('\t');
+  Serial.print("Top Left: ");
+  Serial.print(tl_tof);
+  Serial.print('\t');
+  Serial.print("Bottom Right: ");
+  Serial.print(br_tof);
+  Serial.print('\t');
+  Serial.print("Top Right: ");
+  Serial.print(tr_tof);
+  Serial.print('\t');
+  Serial.print("Left US: ");
+  Serial.print(l_us);
+  Serial.print('\t');
+  Serial.print("Right US: ");
+  Serial.println(r_us);
   // int start = millis();
   // nav_loop();
   // if (weight_entered()) {
@@ -126,5 +126,4 @@ void loop() {
       Serial.print("passing");
       isRemovingWeight = false;  // Reset flag once the barrel has returned
   }
-
 }
