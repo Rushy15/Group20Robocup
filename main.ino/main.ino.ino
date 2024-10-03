@@ -80,54 +80,54 @@ void setup() {
     collection = new Collection();
   }
 
-  // navigation -> navigation_setup();
-  // sensor -> sensor_setup();
+  navigation -> navigation_setup();
+  sensor -> sensor_setup();
   storage -> storage_setup();
-  // collection -> collection_setup();
-  // Serial.println("Goodbye");
+  collection -> collection_setup();
+  Serial.println("Goodbye");
 }
 
 void loop() {
-  // allTOFReadings();
-  // allUSValues();
+  allTOFReadings();
+  allUSValues();
   
-  // printingSensorValues();
+  printingSensorValues();
   
-  // // State Machine for the robot
-  // nav_loop();
-  // isRemovingWeight = false; 
-  // if ((((get_entry() < 180)&&(get_entry() > 50)) || ((get_entry2() < 180) && (get_entry2() > 20))) 
-  //       && !isRemovingWeight) {  // Only check if not currently removing
+  // State Machine for the robot
+  nav_loop();
+  isRemovingWeight = false; 
+  if ((((get_entry() < 180)&&(get_entry() > 50)) || ((get_entry2() < 180) && (get_entry2() > 20))) 
+        && !isRemovingWeight) {  // Only check if not currently removing
 
-  //     isRemovingWeight = true;
-  //     delay(1000);
-  //     navigation -> stop();
-  //     int start = millis();
-  //     int end;
-  //     while (get_barrel() > 100) {
-  //         allTOFReadings();
-  //         spinDrum();
-  //         psState = read_psState();
-  //         end = millis();
-  //         if ((end - start) > 12000) { // Check to see if nothing has been collected in 12 seconds
-  //           while ((end - start) < 14000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
-  //             end = millis();
-  //             reverseDrum();
-  //             navigation -> reverse();
-  //           }
-  //           stopDrum();
-  //           break;
-  //         }
-  //     }
-  // }
+      isRemovingWeight = true;
+      delay(1000);
+      navigation -> stop();
+      int start = millis();
+      int end;
+      while (get_barrel() > 100) {
+          allTOFReadings();
+          spinDrum();
+          psState = read_psState();
+          end = millis();
+          if ((end - start) > 12000) { // Check to see if nothing has been collected in 12 seconds
+            while ((end - start) < 14000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
+              end = millis();
+              reverseDrum();
+              navigation -> reverse();
+            }
+            stopDrum();
+            break;
+          }
+      }
+  }
 
-  // if (get_barrel() < 100 && isRemovingWeight) {
-  //     navigation -> stop();
-  //     stopDrum();
-  //     storing(psState);
-  //     Serial.print("passing");
-  //     isRemovingWeight = false;  // Reset flag once the barrel has returned
-  // }
+  if (get_barrel() < 100 && isRemovingWeight) {
+      navigation -> stop();
+      stopDrum();
+      storing(psState);
+      Serial.print("passing");
+      isRemovingWeight = false;  // Reset flag once the barrel has returned
+  }
 
   // while (max_capacity()) {
   //   wallFollowing();
@@ -136,22 +136,22 @@ void loop() {
   //   }
   // }
   
-  updateColourValues();
+  // updateColourValues();
 
-  uint16_t r = getR();
-  uint16_t g = getR();
-  uint16_t b = getR();
-  Serial.print("\tR:\t"); 
-  Serial.print(r);
-  Serial.print("\tG:\t"); 
-  Serial.print(g);
-  Serial.print("\tB:\t"); 
-  Serial.println(b);
-  if (get_barrel() < 100 && isRemovingWeight) {
-      navigation -> stop();
-      stopDrum();
-      storing(psState);
-      Serial.print("passing");
-      isRemovingWeight = false;  // Reset flag once the barrel has returned
-  }
+  // uint16_t r = getR();
+  // uint16_t g = getR();
+  // uint16_t b = getR();
+  // Serial.print("\tR:\t"); 
+  // Serial.print(r);
+  // Serial.print("\tG:\t"); 
+  // Serial.print(g);
+  // Serial.print("\tB:\t"); 
+  // Serial.println(b);
+  // if (get_barrel() < 100 && isRemovingWeight) {
+  //     navigation -> stop();
+  //     stopDrum();
+  //     storing(psState);
+  //     Serial.print("passing");
+  //     isRemovingWeight = false;  // Reset flag once the barrel has returned
+  // }
 }

@@ -31,7 +31,6 @@ class Storage {
     unsigned long prevTimer = 0;
     uint8_t weights_collected = 0;
     uint8_t finished_storing = 0;
-    uint8_t psState; // Final Value used within the FSM
 
     uint16_t clear, red, green, blue;
     
@@ -45,8 +44,10 @@ class Storage {
     void removeWeights(int Timer1); 
 };
 
+uint8_t psState; // Final Value used within the FSM
+
 int read_psState();
-void storing(uint8_t psState);
+void storing(uint8_t proximityState);
 bool max_capacity();
 void reset_capacity();
 

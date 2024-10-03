@@ -181,12 +181,12 @@ void reset_capacity()
   storage->weights_collected = 0;
 }
 
-void storing(uint8_t psState)
+void storing(uint8_t proximityState)
 { 
   storage->Timer1 = millis();
   int Timer1 = storage->Timer1; 
   storage->finished_storing = 0;
-  Serial.print(psState);
+  // Serial.print(psState);
   
   if (psState == 0) {
     // navigation -> stop();
