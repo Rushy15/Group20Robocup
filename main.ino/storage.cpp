@@ -56,19 +56,22 @@ void Storage::storage_setup() {
 }
 
 void Storage::rotateDrum(int start, int dest) {
-  uint8_t pos = 0; //0   
+  int pos; //0   
+  Serial.println("Looping");
   if (start < dest){
-  for (pos = start; pos <= dest; pos += 2) {
+  for (pos = start; pos <= dest; pos += 1) {
     myservo.write(pos);    
     delay(15);                      
   }         
 }
   else if (start > dest){
-  for (pos = start; pos >= dest; pos -= 2  ) {
+  for (pos = start; pos >= dest; pos -= 1  ) {
+     Serial.println(pos);
     myservo.write(pos);   
     delay(15);                      
   }       
 }
+  
 }
 
 void Storage::discard_all_weights() {
@@ -137,16 +140,20 @@ void Storage::removeWeights(int Timer1)
       case 0:
         delay(1000);
         Serial.println("Fake weight detected1");
+        Serial.println(first_slot);
+        Serial.println(first_slot_discard);
         rotateDrum(first_slot,first_slot_discard);
-        delay(500);
+         Serial.println("Step 1");
+        delay(2500);
         rotateDrum(first_slot_discard,first_slot);
         delay(1500);
+        Serial.println("Step 2");
         finished_storing = 1;
         break;
       case 1:
         delay(1000);
         Serial.println("Fake weight detected2");
-        delay(500);
+        delay(1500);
         rotateDrum(second_slot,second_slot_discard);
         delay(1000);
         rotateDrum(second_slot_discard,second_slot);
@@ -155,7 +162,7 @@ void Storage::removeWeights(int Timer1)
       case 2:
         delay(1000);
         Serial.println("Fake weight detected3");
-        delay(500);
+        delay(1500);
         rotateDrum(third_slot,third_slot_discard);
         delay(1000);
         rotateDrum(third_slot_discard,third_slot);

@@ -151,23 +151,23 @@ void Sensors::srTOF_Values()
     else {
       switch (i){
         case 0:
-          srTOF_holder1 = sensorsL0[i].readRangeContinuousMillimeters();
+          srTOF_holder1 = sensorsL0[i].readRangeSingleMillimeters();
           //srTOF_holder1 = mTOF_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           mTOF = &srTOF_holder1;// Middle tof reading
           break;
         case 1:
-          srTOF_holder2 = sensorsL0[i].readRangeContinuousMillimeters();
-          srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeContinuousMillimeters());
+          srTOF_holder2 = sensorsL0[i].readRangeSingleMillimeters();
+          srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           entry = &srTOF_holder2;// Entry channel tof reading
           break;
         case 2:
-          srTOF_holder3 = sensorsL0[i].readRangeContinuousMillimeters();
+          srTOF_holder3 = sensorsL0[i].readRangeSingleMillimeters();
           //srTOF_holder3 = barrel_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           barrel = &srTOF_holder3;// Barrel tof reading
           break;
         case 3:
-          srTOF_holder4 = sensorsL0[i].readRangeContinuousMillimeters();
-          srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeContinuousMillimeters());
+          srTOF_holder4 = sensorsL0[i].readRangeSingleMillimeters();
+          srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
           entry2 = &srTOF_holder4;// Barrel tof reading
           break;
       }

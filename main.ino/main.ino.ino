@@ -6,9 +6,9 @@
 bool isRemovingWeight = false;
 
 #define ENTRY_MIN 50
-#define ENTRY_MAX 180
+#define ENTRY_MAX 150
 #define ENTRY2_MIN 30
-#define ENTRY2_MAX 140
+#define ENTRY2_MAX 100
 
 void printingSensorValues()
 {
@@ -99,7 +99,7 @@ void loop() {
   printingSensorValues();
   
   // State Machine for the robot
-  nav_loop();
+  //nav_loop();
   
   isRemovingWeight = false; 
   if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
@@ -111,14 +111,14 @@ void loop() {
       while (get_barrel() > 100) {
           allTOFReadings();
           spinDrum();
-          nav_loop();
+          //nav_loop();
           storage->psState = read_psState();
           end = millis();
           if ((end - start) > 12000) { // Check to see if nothing has been collected in 12 seconds
             while ((end - start) < 14000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
               end = millis();
               reverseDrum();
-              navigation -> reverse();
+              //navigation -> reverse();
             }
             stopDrum();
             break;

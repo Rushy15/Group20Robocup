@@ -88,13 +88,13 @@ void Navigation::general_navigation()
    else if (get_tlTOF() < topLevel_longRangeTOFLimit) {///units in cm
     turn_right();
   }
-  else if (tr_tof < rUSLimit) {///units in cm
-    turn_left();
-  }
+  // else if (tr_tof < rUSLimit) {///units in cm
+  //   turn_left();
+  // }
 
-   else if (tl_tof < lUSLimit) {///units in cm
-    turn_right();
-  }
+  //  else if (tl_tof < lUSLimit) {///units in cm
+  //   turn_right();
+  // }
 
   else {
     go_straight(); 
