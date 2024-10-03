@@ -19,7 +19,6 @@
 #define BWR_SLOW 1220  
 #define BWL_SLOW 1780
 
-
 #define N 1500 // Neutral Speed
 
 Navigation *navigation = nullptr;

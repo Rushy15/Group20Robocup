@@ -188,13 +188,13 @@ void storing(uint8_t proximityState)
   storage->finished_storing = 0;
   // Serial.print(psState);
   
-  if (psState == 0) {
+  if (storage->psState == 0) {
     // navigation -> stop();
-    nav_loop();
+    // nav_loop();
     storage->storeWeights();
   } else {
     // navigation -> stop();
-    nav_loop();
+    // nav_loop();
     storage->removeWeights(Timer1);
   }
 }

@@ -5,6 +5,11 @@
 
 bool isRemovingWeight = false;
 
+#define ENTRY_MIN 50
+#define ENTRY_MAX 180
+#define ENTRY2_MIN 30
+#define ENTRY2_MAX 140
+
 void printingSensorValues()
 {
   int l_us = get_lUS();
@@ -28,8 +33,8 @@ void printingSensorValues()
   Serial.print(entry2);
   Serial.print('\t');
   Serial.print("Barrel: ");
-  Serial.println(barrel);
-  Serial.println('\t');
+  Serial.print(barrel);
+  Serial.print('\t');
   Serial.print("Bottom Left: ");
   Serial.print(bl_tof);
   Serial.print('\t');
@@ -89,25 +94,25 @@ void setup() {
 
 void loop() {
   allTOFReadings();
-  allUSValues();
+  //allUSValues();
   
   printingSensorValues();
   
   // State Machine for the robot
   nav_loop();
+  
   isRemovingWeight = false; 
-  if ((((get_entry() < 180)&&(get_entry() > 50)) || ((get_entry2() < 180) && (get_entry2() > 20))) 
+  if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  // Only check if not currently removing
-
       isRemovingWeight = true;
       delay(1000);
-      navigation -> stop();
       int start = millis();
       int end;
       while (get_barrel() > 100) {
           allTOFReadings();
           spinDrum();
-          psState = read_psState();
+          nav_loop();
+          storage->psState = read_psState();
           end = millis();
           if ((end - start) > 12000) { // Check to see if nothing has been collected in 12 seconds
             while ((end - start) < 14000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
@@ -124,11 +129,15 @@ void loop() {
   if (get_barrel() < 100 && isRemovingWeight) {
       navigation -> stop();
       stopDrum();
-      storing(psState);
+      storing(storage->psState);
       Serial.print("passing");
       isRemovingWeight = false;  // Reset flag once the barrel has returned
   }
 
+  
+  
+  
+  
   // while (max_capacity()) {
   //   wallFollowing();
   //   if (/*ADD COLOUR SENSOR CONDITION CODE*/) {

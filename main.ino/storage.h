@@ -26,6 +26,7 @@ class Storage {
     static const int sensor = A7;
     Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
     // int psState_reading;
+    uint8_t psState; // Final Value used within the FSM
 
     unsigned long Timer1, currTimer;  
     unsigned long prevTimer = 0;
@@ -43,8 +44,6 @@ class Storage {
     void storeWeights();
     void removeWeights(int Timer1); 
 };
-
-uint8_t psState; // Final Value used within the FSM
 
 int read_psState();
 void storing(uint8_t proximityState);
