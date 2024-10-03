@@ -118,8 +118,8 @@ void loop() {
           //nav_loop();
           storage->psState = read_psState();
           end = millis();
-          if ((end - start) > 12000) { // Check to see if nothing has been collected in 12 seconds
-            while ((end - start) < 14000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
+          if ((end - start) > 14000) { // Check to see if nothing has been collected in 12 seconds
+            while ((end - start) < 16000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
               end = millis();
               reverseDrum();
               navigation -> reverse();

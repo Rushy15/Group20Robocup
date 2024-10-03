@@ -4,7 +4,7 @@
 #define XSHUT_PIN 3
 #define VL53L0X_ADDRESS_START 0x30
 #define VL53L1X_ADDRESS_START 0x35
-#define SAMPLE_SIZE 5
+#define SAMPLE_SIZE 15
 //#define LONG_RANGE
 #define HIGH_SPEED
 //#define HIGH_ACCURACY
@@ -96,11 +96,11 @@ void Sensors::lrTOF_Setup()
       while (1);
     }
     if ((i == 1)||(i == 2)) {
-    sensorsL1[i].setROISize(7, 4);
+    sensorsL1[i].setROISize(4, 4);
     sensorsL1[i].setROICenter(220);
     }
     if ((i == 0)||(i == 3)) {
-    sensorsL1[i].setROISize(7, 4);
+    sensorsL1[i].setROISize(4, 4);
     sensorsL1[i].setROICenter(164);
     }
 

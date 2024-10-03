@@ -6,14 +6,14 @@
 #define frontTOFMinimum 500
 #define rUSLimit 16
 #define lUSLimit 16
-#define weightDetectingDistance 105
-#define weightDetectingDistanceMax 800
+#define weightDetectingDistance 130// Difference between long range TOFs to turn the robot if a weight is detected
+#define weightDetectingDistanceMax 1200
 #define topLevel_longRangeTOFLimit 170
 
-#define FWR 1850
-#define FWL 1150
-#define BWR 1150  
-#define BWL 1850
+#define FWR 1950
+#define FWL 1050
+#define BWR 1050  
+#define BWL 1950
 
 #define FWR_SLOW 1780
 #define FWL_SLOW 1220
@@ -112,8 +112,8 @@ void Navigation::weightDetection(bool direction)
   if (direction) {
     while ((tr - br) > weightDetectingDistance) {
       turn_right();
-      delay(600);
-      go_straight();
+      // delay(600);
+      // go_straight();
       allTOFReadings();
       allUSValues();
       tr = get_trTOF();
@@ -122,8 +122,8 @@ void Navigation::weightDetection(bool direction)
   } else {
     while ((tl - bl) > weightDetectingDistance) {
       turn_left();
-      delay(600);
-      go_straight();
+      // delay(600);
+      // go_straight();
       allTOFReadings();
       allUSValues();
       tl = get_tlTOF();
@@ -201,7 +201,7 @@ void nav_loop()
           navigation -> weightDetection(1);
         } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
           //Serial.print("Gotcha2");
-          navigation->weightDetection(0);
+          navigation -> weightDetection(0);
         }
         else {
           navigation->general_navigation();
