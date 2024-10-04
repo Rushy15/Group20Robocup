@@ -4,6 +4,7 @@
 #include "collection.h"
 
 bool isRemovingWeight = false;
+bool colourDataCollected = false;
 
 #define ENTRY_MIN 50
 #define ENTRY_MAX 150
@@ -67,6 +68,20 @@ void printingSensorValues()
   // }
 }
 
+void printingColourData()
+{
+  uint16_t r = getR();
+  uint16_t g = getG();
+  uint16_t b = getB();
+
+  Serial.print("\tR:\t"); 
+  Serial.print(r);
+  Serial.print("\tG:\t"); 
+  Serial.print(g);
+  Serial.print("\tB:\t"); 
+  Serial.println(b);
+}
+
 void setup() {
   // put your setup code here, to run once:
   if (sensor == nullptr) {
@@ -95,34 +110,43 @@ void setup() {
 
 void loop() {
   allTOFReadings();
-  //allUSValues();
+  // allUSValues();
+
+  int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
+  while(colourDataCollected == false) {
+    int end_collecting = millis();
+    collectingColourData();
+    printingColourData();
+    if ((end_collecting - start_collecting) > 3000) {
+      colourDataCollected = true;
+    }
+  }
   
-  printingSensorValues();
+  // printingSensorValues();
   
   // State Machine for the robot
-  nav_loop();
+  // nav_loop();
   
   
   if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
-        && !isRemovingWeight) {  // Only check if not currently removing
+        && !isRemovingWeight) {  /* Only check if not currently removing */
       isRemovingWeight = true;
-      navigation -> go_straight();
+      // navigation -> go_straight();
       delay(1000);
-      navigation -> stop();
+      // navigation -> stop();
       delay(500);
       int start = millis();
       int end;
       while (get_barrel() > 100) {
           allTOFReadings();
           spinDrum();
-          //nav_loop();
           storage->psState = read_psState();
           end = millis();
-          if ((end - start) > 14000) { // Check to see if nothing has been collected in 12 seconds
-            while ((end - start) < 16000) { // Reverse the drum and robot for (14 - 12) = 2 seconds
+          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 12 seconds */
+            while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
               end = millis();
               reverseDrum();
-              navigation -> reverse();
+              // navigation -> reverse();
               isRemovingWeight = false;
             }
             stopDrum();
@@ -132,35 +156,24 @@ void loop() {
   }
 
   if (get_barrel() < 100 && isRemovingWeight) {
-      navigation -> stop();
+      // navigation -> stop();
       stopDrum();
       storing(storage->psState);
       Serial.print("passing");
       isRemovingWeight = false;  // Reset flag once the barrel has returned
   }
 
-  
-  
-  
-  
-  // while (max_capacity()) {
-  //   wallFollowing();
-  //   if (/*ADD COLOUR SENSOR CONDITION CODE*/) {
-  //     reset_capacity();
-  //   }
-  // }
+  while (max_capacity()) {
+    //wallFollowing();
+    updateColourValues();
+    printingColourData();
+    if (inHomeBase()) {
+      navigation -> stop();
+      reset_capacity();
+    }
+  }
   
   // updateColourValues();
-
-  // uint16_t r = getR();
-  // uint16_t g = getR();
-  // uint16_t b = getR();
-  // Serial.print("\tR:\t"); 
-  // Serial.print(r);
-  // Serial.print("\tG:\t"); 
-  // Serial.print(g);
-  // Serial.print("\tB:\t"); 
-  // Serial.println(b);
   // if (get_barrel() < 100 && isRemovingWeight) {
   //     navigation -> stop();
   //     stopDrum();

@@ -46,6 +46,35 @@ uint16_t getB()
   return storage->blue;
 }
 
+void collectingColourData()
+{
+  updateColourValues();
+
+  storage->red_homebase = storage->red;
+  storage->blue_homebase = storage->blue;
+  storage->green_homebase = storage->green;
+}
+
+bool inHomeBase()
+{
+  // Measured colour values
+  uint16_t r = storage->red;
+  uint16_t b = storage->blue;
+  uint16_t g = storage->green;
+  // Desired colour values of Homebase
+  uint16_t rh = storage->red_homebase;
+  uint16_t bh = storage->blue_homebase;
+  uint16_t gh = storage->green_homebase;
+
+  if (((r >= (rh - 10)) && (r <= (rh + 10))) &&
+     ((b >= (bh - 10)) && (b <= (bh + 10))) &&
+     ((g >= (gh - 10)) && (g <= (gh + 10)))) {
+      return true;
+     } else {
+      return false;
+     }
+}
+
 void Storage::storage_setup() {
   colour_sensor_setup();
   myservo.attach(30);  // attaches the servo on pin 9 to the servo object
@@ -57,7 +86,7 @@ void Storage::storage_setup() {
 
 void Storage::rotateDrum(int start, int dest) {
   int pos; //0   
-  Serial.println("Looping");
+  // Serial.println("Looping");
   if (start < dest){
   for (pos = start; pos <= dest; pos += 2) {
     myservo.write(pos);    
@@ -66,7 +95,7 @@ void Storage::rotateDrum(int start, int dest) {
 }
   else if (start > dest){
   for (pos = start; pos >= dest; pos -= 2  ) {
-     Serial.println(pos);
+    // Serial.println(pos);
     myservo.write(pos);   
     delay(15);                      
   }       

@@ -34,6 +34,8 @@ class Storage {
     uint8_t finished_storing = 0;
 
     uint16_t clear, red, green, blue;
+
+    uint16_t red_homebase, green_homebase, blue_homebase;
     
     // uint16_t r, g, b; // Final values to be used
 
@@ -51,6 +53,9 @@ bool max_capacity();
 void reset_capacity();
 
 void updateColourValues();
+void collectingColourData();
+bool inHomeBase();
+
 uint16_t getR();
 uint16_t getG();
 uint16_t getB();
