@@ -25,7 +25,7 @@ class Navigation {
 
 void nav_loop();
 // void wallFollowing();
-
+bool walldetected();
 extern Navigation *navigation;
 
 #endif // NAVIGATION_H

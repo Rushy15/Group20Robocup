@@ -4,11 +4,12 @@
 
 #define frontTOFLimit 300
 #define frontTOFMinimum 500
-#define rUSLimit 16
-#define lUSLimit 16
+#define rUSLimit 10
+#define lUSLimit 10
 #define weightDetectingDistance 130// Difference between long range TOFs to turn the robot if a weight is detected
 #define weightDetectingDistanceMax 1200
 #define topLevel_longRangeTOFLimit 170
+#define WallfollowingLimit 150
 
 #define FWR 1950
 #define FWL 1050
@@ -132,54 +133,87 @@ void Navigation::weightDetection(bool direction)
   }
 }
 
-// void wallFollowing()
-// {
-//   // allTOFReadings();
-//   // allUSValues();
-//   uint16_t mTOF = get_mTOF();
-//   uint32_t l_us = get_lUS();
-//   uint32_t r_us = get_rUS();
+bool walldetected() {
+  if ((mTOF < frontTOFLimit) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+void wallFollowing()
+{
+  allTOFReadings();
+  allUSValues();
+  uint16_t mTOF = get_mTOF();
+  uint32_t l_us = get_lUS();
+  uint32_t r_us = get_rUS();
 
-//   /*
-//   if the mTOF and rUS both are less than some distance, 
-//   we want to turn left 
+  /*
+  if the mTOF and rUS both are less than some distance, 
+  we want to turn left 
 
-//   if the mTOF is sensing over some distance, and the rUS is detecting a wall on the right, 
-//   then when the right rUS is not detetcing the wall anymore, turn right. 
-//   */
+  if the mTOF is sensing over some distance, and the rUS is detecting a wall on the right, 
+  then when the right rUS is not detetcing the wall anymore, turn right. 
 
-//   if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
-//     navigation->turn_left();
-//   } else if ((mTOF > frontTOFLimit) && (r_us < rUSLimit)) {
-//     endOfWall = false;
-//     while (endOfWall == false) {
-//       navigation->go_straight();
+  when wall following the number of same turns in a row you can have is two
+  */
+  //Following wall on the right
+  while (walldetected() == false) {
+    allTOFReadings();
+    allUSValues();
+    navigation -> go_straight();
+  }
+  if (((mTOF < frontTOFLimit)&& (r_us <= rUSLimit))||(mTOF < frontTOFLimit)) {
+    while (mTOF < frontTOFMinimum){
+        allTOFReadings();
+        mTOF = get_mTOF();
+        navigation -> turn_left();
+      }
+  }
+  else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit)) {
+    while (get_brTOF() > WallfollowingLimit) {
+      allTOFReadings();
+      navigation -> turn_right();
+    }
+  }
+  else {
+    navigation -> go_straight();
+  }
+
+
+  // if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
+  //   navigation->turn_left();
+  // } else if ((mTOF > frontTOFLimit) && (r_us < rUSLimit)) {
+  //   endOfWall = false;
+  //   while (endOfWall == false) {
+  //     navigation->go_straight();
       
-//       allTOFReadings();
-//       allUSValues();
-//       mTOF = get_mTOF();
-//       l_us =  get_lUS();
-//       r_us = get_rUS();
+  //     allTOFReadings();
+  //     allUSValues();
+  //     mTOF = get_mTOF();
+  //     l_us =  get_lUS();
+  //     r_us = get_rUS();
 
-//       if (r_us > rUSLimit) {
-//         navigation->turn_right();
-//         endOfWall = true;
-//       }
-//   }
-//   } else if ((mTOF < frontTOFLimit) && (l_us < lUSLimit)){
-//     while (l_us < lUSLimit) {
-//       navigation->turn_left();
+  //     if (r_us > rUSLimit) {
+  //       navigation->turn_right();
+  //       endOfWall = true;
+  //     }
+  // }
+  // } else if ((mTOF < frontTOFLimit) && (l_us < lUSLimit)){
+  //   while (l_us < lUSLimit) {
+  //     navigation->turn_left();
 
-//       allTOFReadings();
-//       allUSValues();
-//       mTOF = get_mTOF();
-//       l_us =  get_lUS();
-//       r_us = get_rUS();
-//     }
-//   } else {
-//     navigation->go_straight();
-//   }
-// }
+  //     allTOFReadings();
+  //     allUSValues();
+  //     mTOF = get_mTOF();
+  //     l_us =  get_lUS();
+  //     r_us = get_rUS();
+  //   }
+  // } else {
+  //   navigation->go_straight();
+  // }
+}
 
 
 void nav_loop() 

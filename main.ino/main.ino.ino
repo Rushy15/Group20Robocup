@@ -110,68 +110,69 @@ void setup() {
 
 void loop() {
   allTOFReadings();
+  wallFollowing();
   // allUSValues();
 
-  int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
-  while(colourDataCollected == false) {
-    int end_collecting = millis();
-    collectingColourData();
-    printingColourData();
-    if ((end_collecting - start_collecting) > 3000) {
-      colourDataCollected = true;
-    }
-  }
+  // int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
+  // while(colourDataCollected == false) {
+  //   int end_collecting = millis();
+  //   collectingColourData();
+  //   printingColourData();
+  //   if ((end_collecting - start_collecting) > 3000) {
+  //     colourDataCollected = true;
+  //   }
+  // }
   
-  // printingSensorValues();
+  // // printingSensorValues();
   
-  // State Machine for the robot
-  // nav_loop();
+  // // State Machine for the robot
+  // // nav_loop();
   
   
-  if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
-        && !isRemovingWeight) {  /* Only check if not currently removing */
-      isRemovingWeight = true;
-      // navigation -> go_straight();
-      delay(1000);
-      // navigation -> stop();
-      delay(500);
-      int start = millis();
-      int end;
-      while (get_barrel() > 100) {
-          allTOFReadings();
-          spinDrum();
-          storage->psState = read_psState();
-          end = millis();
-          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 12 seconds */
-            while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
-              end = millis();
-              reverseDrum();
-              // navigation -> reverse();
-              isRemovingWeight = false;
-            }
-            stopDrum();
-            break;
-          }
-      }
-  }
+  // if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
+  //       && !isRemovingWeight) {  /* Only check if not currently removing */
+  //     isRemovingWeight = true;
+  //     // navigation -> go_straight();
+  //     delay(1000);
+  //     // navigation -> stop();
+  //     delay(500);
+  //     int start = millis();
+  //     int end;
+  //     while (get_barrel() > 100) {
+  //         allTOFReadings();
+  //         spinDrum();
+  //         storage->psState = read_psState();
+  //         end = millis();
+  //         if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 12 seconds */
+  //           while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
+  //             end = millis();
+  //             reverseDrum();
+  //             // navigation -> reverse();
+  //             isRemovingWeight = false;
+  //           }
+  //           stopDrum();
+  //           break;
+  //         }
+  //     }
+  // }
 
-  if (get_barrel() < 100 && isRemovingWeight) {
-      // navigation -> stop();
-      stopDrum();
-      storing(storage->psState);
-      Serial.print("passing");
-      isRemovingWeight = false;  // Reset flag once the barrel has returned
-  }
+  // if (get_barrel() < 100 && isRemovingWeight) {
+  //     // navigation -> stop();
+  //     stopDrum();
+  //     storing(storage->psState);
+  //     Serial.print("passing");
+  //     isRemovingWeight = false;  // Reset flag once the barrel has returned
+  // }
 
-  while (max_capacity()) {
-    //wallFollowing();
-    updateColourValues();
-    printingColourData();
-    if (inHomeBase()) {
-      navigation -> stop();
-      reset_capacity();
-    }
-  }
+  // while (max_capacity()) {
+  //   //wallFollowing();
+  //   updateColourValues();
+  //   printingColourData();
+  //   if (inHomeBase()) {
+  //     navigation -> stop();
+  //     reset_capacity();
+  //   }
+  // }
   
   // updateColourValues();
   // if (get_barrel() < 100 && isRemovingWeight) {
