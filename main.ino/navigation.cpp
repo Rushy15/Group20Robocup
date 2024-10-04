@@ -2,8 +2,8 @@
 #include "sensors.h"
 #include "storage.h"
 
-#define frontTOFLimit 300
-#define frontTOFMinimum 600
+#define frontTOFLimit 300//300 for general navigation
+#define frontTOFMinimum 500
 #define rUSLimit 15
 #define lUSLimit 15
 #define weightDetectingDistance 130// Difference between long range TOFs to turn the robot if a weight is detected
@@ -67,7 +67,18 @@ void Navigation::reverse() {
 void Navigation::roll_right()
 {
   Rservo.writeMicroseconds(BWR_FULL);  
-  Lservo.writeMicroseconds(1200);  
+  Lservo.writeMicroseconds(FWL_FULL);
+  delay(10); 
+  Rservo.writeMicroseconds(N); 
+  delay(20); 
+}
+
+void Navigation::roll_left()
+{
+  Rservo.writeMicroseconds(FWR_FULL);  
+  Lservo.writeMicroseconds(BWL_FULL);
+  delay(55); 
+  Lservo.writeMicroseconds(N); 
 }
 
 void Navigation::general_navigation()
@@ -146,7 +157,13 @@ void Navigation::weightDetection(bool direction)
 }
 
 void walldetected() {
-  if (get_mTOF() < frontTOFLimit) {
+  if ((get_mTOF() < frontTOFLimit)||(get_tlTOF() < topLevel_longRangeTOFLimit)) {
+    while ((get_mTOF() < frontTOFMinimum)||(get_tlTOF() < topLevel_longRangeTOFLimit)){
+      Serial.println("Stuck Here 1");
+        allTOFReadings();
+        //allUSValues();
+        navigation -> turn_left();
+      }
     navigation -> walldetected_bool = true;
   }
 }
@@ -179,20 +196,21 @@ void wallFollowing()
   }
 
   if (navigation->walldetected_bool == true) {
-    if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))) {
-    while (mTOF < frontTOFLimit){
+    if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))||(get_trTOF() < topLevel_longRangeTOFLimit)) {
+    while (mTOF < frontTOFLimit) {
       Serial.println("Stuck Here 1");
         allTOFReadings();
-        allUSValues();
+        //allUSValues();
         mTOF = get_mTOF();
         r_us = get_rUS();
-        navigation -> turn_left();
+        navigation -> roll_left();
+        
       }
     // navigation -> go_straight();
   }
   
   else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
-    while ((r_us > WallfollowingLimit) || (trTOF > frontTOFLimit)) {
+    while ((r_us > WallfollowingLimit) && (trTOF > frontTOFLimit) && (mTOF > frontTOFLimit)) {
       Serial.println("Stuck Here 2");
       allTOFReadings();
       allUSValues();
@@ -202,12 +220,8 @@ void wallFollowing()
       trTOF = get_trTOF();
       // navigation -> turn_right(); 
       navigation -> roll_right();
+     
     }
-    navigation -> go_straight();
-
-  } else if (get_trTOF() < topLevel_longRangeTOFLimit) {///units in cm
-    navigation->turn_left();
-
   } else {
     navigation -> go_straight();
   }

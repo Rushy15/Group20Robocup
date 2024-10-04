@@ -18,6 +18,7 @@ class Navigation {
     void reverse();
     void stop();
     void roll_right();
+    void roll_left();
 
     void general_navigation();
     void weightDetection(bool direction);
