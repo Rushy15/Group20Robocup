@@ -3,13 +3,19 @@
 #include "storage.h"
 
 #define frontTOFLimit 300
-#define frontTOFMinimum 500
+#define frontTOFMinimum 600
 #define rUSLimit 15
 #define lUSLimit 15
 #define weightDetectingDistance 130// Difference between long range TOFs to turn the robot if a weight is detected
 #define weightDetectingDistanceMax 1200
 #define topLevel_longRangeTOFLimit 170
 #define WallfollowingLimit 25
+
+
+#define FWR_FULL 1950
+#define FWL_FULL 1050
+#define BWR_FULL 1050  
+#define BWL_FULL 1950
 
 #define FWR 1850
 #define FWL 1150
@@ -60,7 +66,7 @@ void Navigation::reverse() {
 
 void Navigation::roll_right()
 {
-  Rservo.writeMicroseconds(N);  
+  Rservo.writeMicroseconds(BWR_FULL);  
   Lservo.writeMicroseconds(FWL);  
 }
 
@@ -152,6 +158,7 @@ void wallFollowing()
   uint16_t mTOF = get_mTOF();
   // uint32_t l_us = get_lUS();
   uint32_t r_us = get_rUS();
+  uint16_t trTOF = get_trTOF();
 
   /*
   if the mTOF and rUS both are less than some distance, 
@@ -171,22 +178,27 @@ void wallFollowing()
     navigation -> go_straight();
   }
 
-  if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum)&& (get_rUS() <= rUSLimit))) {
+  if (navigation->walldetected_bool == true) {
+    if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))) {
     while (mTOF < frontTOFLimit){
       Serial.println("Stuck Here 1");
         allTOFReadings();
         allUSValues();
         mTOF = get_mTOF();
+        r_us = get_rUS();
         navigation -> turn_left();
       }
   }
   
-  else if ((mTOF > frontTOFLimit) && (get_rUS() > rUSLimit)) {
-    while ((get_rUS() > WallfollowingLimit)) {
+  else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
+    while ((r_us > WallfollowingLimit) || (trTOF > frontTOFLimit)) {
       Serial.println("Stuck Here 2");
       allTOFReadings();
       allUSValues();
+
       mTOF = get_mTOF();
+      r_us = get_rUS();
+      trTOF = get_trTOF();
       // navigation -> turn_right(); 
       navigation -> roll_right();
     }
@@ -196,7 +208,7 @@ void wallFollowing()
   } else {
     navigation -> go_straight();
   }
-
+  }
 
   // if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
   //   navigation->turn_left();
