@@ -67,7 +67,7 @@ void Navigation::reverse() {
 void Navigation::roll_right()
 {
   Rservo.writeMicroseconds(BWR_FULL);  
-  Lservo.writeMicroseconds(FWL);  
+  Lservo.writeMicroseconds(1200);  
 }
 
 void Navigation::general_navigation()
@@ -188,6 +188,7 @@ void wallFollowing()
         r_us = get_rUS();
         navigation -> turn_left();
       }
+    // navigation -> go_straight();
   }
   
   else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
@@ -202,13 +203,15 @@ void wallFollowing()
       // navigation -> turn_right(); 
       navigation -> roll_right();
     }
+    navigation -> go_straight();
 
   } else if (get_trTOF() < topLevel_longRangeTOFLimit) {///units in cm
     navigation->turn_left();
+
   } else {
     navigation -> go_straight();
   }
-  }
+}
 
   // if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
   //   navigation->turn_left();
