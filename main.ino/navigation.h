@@ -10,11 +10,14 @@ class Navigation {
     Servo Lservo;
     
   public:
+  bool walldetected_bool = false;
+
     void go_straight();
     void turn_left();
     void turn_right();
     void reverse();
     void stop();
+    void roll_right();
 
     void general_navigation();
     void weightDetection(bool direction);
@@ -24,8 +27,8 @@ class Navigation {
 // bool endOfWall = false;
 
 void nav_loop();
-// void wallFollowing();
-bool walldetected();
+void wallFollowing();
+void walldetected();
 extern Navigation *navigation;
 
 #endif // NAVIGATION_H

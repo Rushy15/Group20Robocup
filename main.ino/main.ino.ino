@@ -110,9 +110,10 @@ void setup() {
 
 void loop() {
   allTOFReadings();
-  wallFollowing();
-  // allUSValues();
+  allUSValues();
+  printingSensorValues();
 
+  wallFollowing();
   // int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
   // while(colourDataCollected == false) {
   //   int end_collecting = millis();
@@ -123,7 +124,6 @@ void loop() {
   //   }
   // }
   
-  // // printingSensorValues();
   
   // // State Machine for the robot
   // // nav_loop();
