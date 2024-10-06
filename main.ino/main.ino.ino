@@ -197,15 +197,33 @@ void loop() {
     updateColourValues();
     printingColourData();
     if (inHomeBase()) {
+      navigation->go_straight();
       delay(1000);
       int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
       int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
+      int angle_to_turn = abs(current_angle - desired_angle);
+
+      Serial.print("Current Angle");
+      Serial.print(current_angle);
+      Serial.print('\t');
+      Serial.print("Desired Angle");
+      Serial.print(desired_angle);
+      Serial.print('\t');
+      Serial.print("Difference");
+      Serial.println(angle_to_turn);
+
       navigation -> stop();
-      while (abs(current_angle - desired_angle) < 10) {
+      while (angle_to_turn > 10) {
         navigation->turn_left();
-        current_angle = get_headingAngle(0);
         imu_loop();
+        
+        current_angle = get_headingAngle(0);
+        angle_to_turn = abs(current_angle - desired_angle);
+        
+        Serial.print("Current Angle in Loop");
+        Serial.println(current_angle);
       } 
+      navigation -> stop();
       reset_capacity();
     }
   }
