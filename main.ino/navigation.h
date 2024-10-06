@@ -10,8 +10,11 @@ class Navigation {
     Servo Lservo;
     
   public:
-  bool walldetected_bool = false;
-  bool robotstuck_bool = false;
+    bool walldetected_bool = false;
+    bool robotstuck_bool = false;
+    bool weight_detcted_bool = false;
+
+    int start_weight_detection;
 
     void go_straight();
     void turn_left();
@@ -29,9 +32,11 @@ class Navigation {
 // bool endOfWall = false;
 
 int angleToTurn(int currentHeadingAngle, int angleToTurn);
-void nav_loop();
+void nav_loop(bool weight_detected);
 void wallFollowing();
 void walldetected();
+bool reachedDesiredHeadingAngle(int desiredAngle);
+
 extern Navigation *navigation;
 
 #endif // NAVIGATION_H

@@ -30,7 +30,7 @@ class Storage {
 
     unsigned long Timer1, currTimer;  
     unsigned long prevTimer = 0;
-    uint8_t weights_collected = 0;
+    uint8_t weights_collected = 3;
     uint8_t finished_storing = 0;
 
     uint16_t clear, red, green, blue;

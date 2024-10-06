@@ -12,7 +12,7 @@ bool colourDataCollected = false;
 #define ENTRY2_MIN 30
 #define ENTRY2_MAX 100
 
-#define ANGLE_TO_TURN_DURING_UNLOADING 180 // Can assign a max value of 180 
+#define ANGLE_TO_TURN_DURING_UNLOADING 90 // Can assign a max value of 180 
 
 void printingSensorValues()
 {
@@ -56,19 +56,6 @@ void printingSensorValues()
   Serial.print('\t');
   Serial.print("Right US: ");
   Serial.println(r_us);
-  // int start = millis();
-  // nav_loop();
-  // if (weight_entered()) {
-  //   collect_weight();
-  //   storing();
-  //   if (weightInBarrel()) {
-  //     if (ps == 1) {
-  //       store_weight();
-  //     } else {
-  //       remove_weight();
-  //     }
-  //   }  
-  // }
 }
 
 void printingColourData()
@@ -150,15 +137,15 @@ void loop() {
   }
   
   /* State Machine for the robot */
-  nav_loop();
+  nav_loop(navigation->weight_detcted_bool);
   
   /* Checking to see if a weight has entered the channel of the robot */
   if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  /* Only check if not currently removing */
       isRemovingWeight = true;
-      navigation -> go_straight();
+      // navigation -> go_straight();
       delay(500);
-      navigation -> stop();
+      // navigation -> stop();
       delay(500);
       int start = millis();
       int end;
@@ -172,7 +159,7 @@ void loop() {
               allTOFReadings();
               end = millis();
               reverseDrum();
-              navigation -> reverse();
+              // navigation -> reverse();
               isRemovingWeight = false;
             }
             isRemovingWeight = false;
@@ -191,7 +178,7 @@ void loop() {
       isRemovingWeight = false;  /* Reset flag once the barrel has returned */
   }
 
-  /* Checking to see if the robot has collected three weights and is at full capacicty*/
+  // /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
     wallFollowing();
     updateColourValues();
@@ -203,25 +190,24 @@ void loop() {
       int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
       int angle_to_turn = abs(current_angle - desired_angle);
 
-      Serial.print("Current Angle");
-      Serial.print(current_angle);
-      Serial.print('\t');
-      Serial.print("Desired Angle");
-      Serial.print(desired_angle);
-      Serial.print('\t');
-      Serial.print("Difference");
-      Serial.println(angle_to_turn);
+      // Serial.print("Current Angle");
+      // Serial.print(current_angle);
+      // Serial.print('\t');
+      // Serial.print("Desired Angle");
+      // Serial.print(desired_angle);
+      // Serial.print('\t');
+      // Serial.print("Difference");
+      // Serial.println(angle_to_turn);
 
       navigation -> stop();
-      while (angle_to_turn > 10) {
+      while (reachedDesiredHeadingAngle(desired_angle) == false) {
         navigation->turn_left();
         imu_loop();
+        // current_angle = get_headingAngle(0);
+        // angle_to_turn = abs(current_angle - desired_angle);
         
-        current_angle = get_headingAngle(0);
-        angle_to_turn = abs(current_angle - desired_angle);
-        
-        Serial.print("Current Angle in Loop");
-        Serial.println(current_angle);
+        // Serial.print("Current Angle in Loop");
+        // Serial.println(current_angle);
       } 
       navigation -> stop();
       reset_capacity();

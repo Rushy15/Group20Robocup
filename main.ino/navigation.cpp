@@ -1,6 +1,7 @@
 #include "navigation.h"
 #include "sensors.h"
 #include "storage.h"
+#include "imu.h"
 
 #define frontTOFLimit 300//300 for general navigation
 #define frontTOFWFLimit 350//wall following limit
@@ -13,6 +14,8 @@
 #define topLevel_longRangeTOFLimit 170
 #define topLevel_longRangeTOFWFLimit 200
 #define WallfollowingLimit 25
+#define angleToTurnDuringWallFollowing 90
+#define angleToTurnDuringFindingWeight 340
 
 
 #define FWR_FULL 1900
@@ -105,13 +108,9 @@ int angleToTurn(int currentHeadingAngle, int angleToTurn)
 
 void Navigation::general_navigation()
 {
-  // allTOFReadings();
-  // allUSValues();
   int mTOF = get_mTOF();
   int tr_tof = get_trTOF();
   int tl_tof = get_tlTOF();
-
-
 
   if (mTOF < frontTOFLimit){ //units in mm
     if (tr_tof < tl_tof){
@@ -128,23 +127,13 @@ void Navigation::general_navigation()
         turn_right();
       }
     }
-  }
-
+  } 
   else if (get_trTOF() < topLevel_longRangeTOFLimit) {///units in cm
     turn_left();
-  }
-
-   else if (get_tlTOF() < topLevel_longRangeTOFLimit) {///units in cm
+  } 
+  else if (get_tlTOF() < topLevel_longRangeTOFLimit) {///units in cm
     turn_right();
   }
-  // else if (tr_tof < rUSLimit) {///units in cm
-  //   turn_left();
-  // }
-
-  //  else if (tl_tof < lUSLimit) {///units in cm
-  //   turn_right();
-  // }
-
   else {
     go_straight(); 
   }
@@ -192,6 +181,16 @@ void walldetected() {
   }
 }
 
+bool reachedDesiredHeadingAngle(int desiredAngle)
+{
+  int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+  int angle_to_turn = abs(current_angle - desiredAngle);
+  if (angle_to_turn < 10) {
+    return true;
+  }
+  return false;
+}
+
 void wallFollowing()
 {
   allTOFReadings();
@@ -221,21 +220,28 @@ void wallFollowing()
 
   if (navigation->walldetected_bool == true) {
     if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))||(get_trTOF() < topLevel_longRangeTOFWFLimit)) {
-    while (mTOF < frontTOFLimit) {
-      Serial.println("Stuck Here 1");
+    int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing);
+    while (reachedDesiredHeadingAngle(desired_angle) == false) {
+        Serial.println("Stuck Here 1");
         allTOFReadings();
         //allUSValues();
         mTOF = get_mTOF();
         r_us = get_rUS();
+        // int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+        // int desired_angle = angleToTurn(current_angle, angleToTurnDuringWallFollowing);
         navigation -> roll_left();
+        imu_loop();
         
       }
     // navigation -> go_straight();
   }
   
   else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
-    while ((r_us > WallfollowingLimit) && (trTOF > topLevel_longRangeTOFWFLimit) && (mTOF > frontTOFLimit)) {
+    int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing);
+    while (reachedDesiredHeadingAngle(desired_angle) == false) {
+      // (r_us > WallfollowingLimit) && (trTOF > topLevel_longRangeTOFWFLimit) && (mTOF > frontTOFLimit)
       Serial.println("Stuck Here 2");
+      
       allTOFReadings();
       allUSValues();
 
@@ -244,44 +250,13 @@ void wallFollowing()
       trTOF = get_trTOF();
       // navigation -> turn_right(); 
       navigation -> roll_right();
+      imu_loop();
      
     }
   } else {
     navigation -> go_straight();
   }
 }
-
-  // if ((mTOF < frontTOFLimit) && (r_us < rUSLimit)) {
-  //   navigation->turn_left();
-  // } else if ((mTOF > frontTOFLimit) && (r_us < rUSLimit)) {
-  //   endOfWall = false;
-  //   while (endOfWall == false) {
-  //     navigation->go_straight();
-      
-  //     allTOFReadings();
-  //     allUSValues();
-  //     mTOF = get_mTOF();
-  //     l_us =  get_lUS();
-  //     r_us = get_rUS();
-
-  //     if (r_us > rUSLimit) {
-  //       navigation->turn_right();
-  //       endOfWall = true;
-  //     }
-  // }
-  // } else if ((mTOF < frontTOFLimit) && (l_us < lUSLimit)){
-  //   while (l_us < lUSLimit) {
-  //     navigation->turn_left();
-
-  //     allTOFReadings();
-  //     allUSValues();
-  //     mTOF = get_mTOF();
-  //     l_us =  get_lUS();
-  //     r_us = get_rUS();
-  //   }
-  // } else {
-  //   navigation->go_straight();
-  // }
 }
 
 void check_stuck_condition() {
@@ -306,49 +281,76 @@ void check_stuck_condition() {
     } else {
         isStuck = false; // Reset if not stuck
     }
+}
 
-    // Check if at home base (using color sensor)
-    // if (isAtHomeBase()) { // You need to implement this function
-    //     if (!atHomeBase) {
-    //         homeBaseStartTime = millis(); // Start timer
-    //         atHomeBase = true;
-    //     } else if (millis() - homeBaseStartTime >= HOME_BASE_THRESHOLD) {
-    //         reverse(REVERSE_DURATION);
-    //         atHomeBase = false; // Reset home base state after reversing
-    //     }
-    // } else {
-    //     atHomeBase = false; // Reset if not at home base
-    }
-
-void nav_loop() 
+void nav_loop(bool weight_detected)
 {
   uint16_t tr = get_trTOF();
   uint16_t br = get_brTOF();
   uint16_t tl = get_tlTOF();
   uint16_t bl = get_blTOF();
 
-  // if ((((tr - br) > 65) && (br < 1300))||(((tl - bl) > 65) && (bl < 1300))){
-  //   while ((get_entry() > 190)||(get_mTOF() > frontTOFLimit)) {
-  //       allTOFReadings();
-  //       tr = get_trTOF();
-  //       br = get_brTOF();
-  //       tl = get_tlTOF();
-  //       bl = get_blTOF();
   check_stuck_condition();
   if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
     //Serial.print("Gotcha1");
     navigation -> weightDetection(1);
+    bool weight_detcted_bool = true;
   } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
     //Serial.print("Gotcha2");
     navigation -> weightDetection(0);
+    bool weight_detcted_bool = true;
   }
   else {
+    if (weight_detected == false) {
+      navigation->start_weight_detection = millis();
+      navigation->weight_detcted_bool = true;
+      Serial.println("Timer Started");
+    } else {
+      int end_weight_detection = millis();
+      Serial.print("Timer Ended");
+      Serial.print("\t");
+      Serial.println(end_weight_detection - navigation->start_weight_detection);
+      if (end_weight_detection - navigation->start_weight_detection >  3000) {
+        int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringFindingWeight);
+        
+        Serial.print("Finding Desired Angle:");
+        Serial.print("\t");
+        Serial.print(desired_angle);
+        Serial.print("\t");
+        Serial.print("Current Angle:");
+        Serial.print("\t");
+        Serial.print(get_headingAngle(0));
+        Serial.print("\t");
+        Serial.print("Has it performed a turn?: ");
+        Serial.print("\t");
+        Serial.println(reachedDesiredHeadingAngle(desired_angle));
+
+        while (reachedDesiredHeadingAngle(desired_angle) == false) {
+          if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
+            //Serial.print("Gotcha1");
+            bool weight_detcted_bool = true;
+            break;
+          } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
+            //Serial.print("Gotcha2");
+            bool weight_detcted_bool = true;
+            break;
+          } else {
+            Serial.println("Scanning...");
+            navigation->turn_right();
+            
+            allTOFReadings();
+            tr = get_trTOF();
+            br = get_brTOF();
+            tl = get_tlTOF();
+            bl = get_blTOF();
+
+            imu_loop();
+          }
+        }
+        navigation->weight_detcted_bool = false;
+        navigation->turn_right();
+      }
+    }
     navigation->general_navigation();
   }
-    
-  // }
-   
-  
-  // navigation->wallFollowing();
-  // navigation->wallFollowing();
 }

@@ -106,13 +106,13 @@ void Storage::rotateDrum(int start, int dest) {
 void Storage::discard_all_weights() {
 
   rotateDrum(third_slot,third_slot_discard); 
-  delay(2500);
+  delay(1000);
   rotateDrum(third_slot_discard,second_slot_discard); 
-  delay(2500);
+  delay(1000);
   rotateDrum(second_slot_discard,first_slot_discard);                             
-  delay(2500); 
+  delay(1000); 
   rotateDrum(first_slot_discard,first_slot);                             
-  delay(2500); 
+  delay(1000); 
 }
 
 int read_psState()
@@ -209,6 +209,7 @@ void reset_capacity()
 {
   storage->discard_all_weights();
   storage->weights_collected = 0;
+  navigation->walldetected_bool = false;
 }
 
 void storing(uint8_t proximityState)
