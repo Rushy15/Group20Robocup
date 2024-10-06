@@ -7,19 +7,22 @@
 #include "imu.h"
 
 /* Enum that stores different states for the FSM */
-enum State {
+typedef enum {
   IDLE = 0,
   NAVIGATION,
   COLLECTION,
   STORAGE,
   WALL_FOLLOWING,
-};
+} RobotState_t;
 
-State currentState = IDLE; /* Initialise the current state of the FSM to IDLE */
+RobotState_t currentState = IDLE; /* Initialise the current state of the FSM to IDLE */
+
 Scheduler ts; /* Creating a task scheduler variable */
 
 bool isRemovingWeight = false;
 bool colourDataCollected = false;
+
+int start_collecting;
 
 #define ENTRY_MIN 50
 #define ENTRY_MAX 150
@@ -34,11 +37,11 @@ bool colourDataCollected = false;
 #define ANGLE_TO_TURN_DURING_UNLOADING 90 // Can assign a max value of 180 
 
 /* Creating local pointers to the different classes */
-Sensors *sensor_ptr;
-Navigation *navigation_ptr;
-Storage *storage_ptr;
-Collection *collection_ptr;
-IMU *imu_ptr;
+// Sensors *sensor_ptr;
+// Navigation *navigation_ptr;
+// Storage *storage_ptr;
+// Collection *collection_ptr;
+// IMU *imu_ptr;
 
 /*
 --------------------------------------------------------------------------------------------------------------------------
@@ -159,24 +162,26 @@ void printingIMUData()
 
                                               /* Callback functions for tasks */
 
-void updateColourDataCallback()
+void updateColourDataCallback(int start_collecting)
 {
   /* Getting colour of home base - One time loop at startup*/
-  int start_collecting = millis();
-  while(colourDataCollected == false) {
+  // while(colourDataCollected == false) {
+    Serial.println("Updating Colours");
     int end_collecting = millis();
     collectingColourData();
     printingColourData();
     if ((end_collecting - start_collecting) > 3000) {
       colourDataCollected = true;
     }
-  }
+  // }
 }
 
 void generalNavCallback()
 {
   /* State Machine for the robot */
+  Serial.print("Entering Nav Loop");
   nav_loop(get_weight_detected_bool());
+  Serial.print("Exited Nav Loop");
 }
 
 void collectWeightCallback()
@@ -240,10 +245,10 @@ void wallFollowingCallback()
   -> Look at above description to understand the format for initialising tasks *
 */
 
-Task updateTOFData(300, TASK_FOREVER, &allTOFReadings, &ts, true);
+Task updateTOFData(300, TASK_FOREVER, &allTOFReadings, &ts, false);
 Task updateUSData(1000, TASK_FOREVER, &allUSValues, &ts, false);
 Task updateIMUData(300, TASK_FOREVER, &imu_loop, &ts, false);
-Task updateColourData(3000, TASK_ONCE, &updateColourDataCallback, &ts, true);
+Task updateColourData(3000, TASK_FOREVER, &updateColourDataCallback, &ts, true);
 
 Task generalNav(3000, TASK_FOREVER, &generalNavCallback, &ts, false);
 Task wallFollowingNav(10000, TASK_FOREVER, &wallFollowingCallback, &ts, false);
@@ -284,15 +289,19 @@ void FSMHandler()
     case 0: { // IDLE - One time call, used to read colour sensor data and initialise a homebase
       disableAllTasks();
       if (colourDataCollected == false) {
+        start_collecting = millis();
         updateColourData.enable();
+        // printingColourData();
+      } else {
+        currentState = NAVIGATION;
+        disableAllTasks();
       }
-      currentState = NAVIGATION;
-      disableAllTasks();
       break;
     }
     case 1: { // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
-      disableAllTasksExcept(generalNav);
-
+      disableAllTasks();
+      generalNav.enable();
+      Serial.println("Navigating");
       if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  /* Only check if not currently removing */
         isRemovingWeight = true;
@@ -305,6 +314,12 @@ void FSMHandler()
         currentState = COLLECTION;
         disableAllTasks();
         break;
+      } else {
+        Serial.print("Enabling General Navigation");
+        generalNav.enable();
+        currentState = NAVIGATION;
+        break;
+      }
     }
     case 2: { // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
       int start = millis();
@@ -351,16 +366,36 @@ void FSMHandler()
     }
   }
 }
-}
+
 
 void setup() {
   // put your setup code here, to run once:
-  sensor_ptr -> sensor_setup();
-  navigation_ptr->navigation_setup();
-  storage_ptr -> storage_setup();
-  collection_ptr -> collection_setup();
-  imu_ptr -> imu_setup();
+  if (sensor == nullptr) {
+    sensor = new Sensors();
+  }
 
+  if (navigation == nullptr) {
+    navigation = new Navigation();
+  } 
+
+  if (storage == nullptr) {
+    storage = new Storage();
+  } 
+
+  if (collection == nullptr) {
+    collection = new Collection();
+  }
+
+  if (imu_ptr == nullptr) {
+    imu_ptr = new IMU();
+  }
+  
+  sensor -> sensor_setup();
+  navigation -> navigation_setup();
+  storage -> storage_setup();
+  collection -> collection_setup();
+  imu_ptr -> imu_setup();
+  
   ts.addTask(updateUSData);
   ts.addTask(updateIMUData);
   ts.addTask(updateColourData);
@@ -376,7 +411,8 @@ void loop() {
   FSMHandler();
 
   ts.execute();
-  
+  Serial.print("Executing Task: ");
+  Serial.println(currentState);
   // printingSensorValues();
   // printingIMUData();
 }

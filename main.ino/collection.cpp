@@ -1,6 +1,6 @@
 #include "collection.h"
 
-Collection *collection = new Collection();
+Collection *collection = nullptr;
 
 void Collection::collection_setup()
 {

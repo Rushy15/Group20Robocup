@@ -5,7 +5,7 @@
 */
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28);
 
-IMU *imu_ptr_1 = new IMU();
+IMU *imu_ptr = nullptr;
 
 void IMU::imu_setup() {
   Serial.println("Orientation Sensor Test"); Serial.println("");
@@ -22,7 +22,7 @@ void IMU::imu_setup() {
 void imu_loop(void)
 {
   unsigned long tStart = micros();
-  imu_ptr_1->bno.getEvent(&(imu_ptr_1->orientationData), Adafruit_BNO055::VECTOR_EULER);
+  imu_ptr->bno.getEvent(&(imu_ptr->orientationData), Adafruit_BNO055::VECTOR_EULER);
   // bno.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
   // bno.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
 
@@ -36,11 +36,11 @@ int get_headingAngle(int direction)
 {
   switch(direction) {
     case 0:
-      return imu_ptr_1->orientationData.orientation.x;
+      return imu_ptr->orientationData.orientation.x;
     case 1:
-      return imu_ptr_1->orientationData.orientation.y;
+      return imu_ptr->orientationData.orientation.y;
     case 2:
-      return imu_ptr_1->orientationData.orientation.z;
+      return imu_ptr->orientationData.orientation.z;
   }
   return 0;
 }

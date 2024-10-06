@@ -8,7 +8,7 @@
 //#define LONG_RANGE
 #define HIGH_SPEED
 //#define HIGH_ACCURACY
-Sensors *sensor = new Sensors();
+Sensors *sensor = nullptr;
 
 movingAvg lUS_Avg(SAMPLE_SIZE), rUS_Avg(SAMPLE_SIZE); // For Ultrasound 
 movingAvg mTOF_Avg(SAMPLE_SIZE), entry_Avg(SAMPLE_SIZE), barrel_Avg(SAMPLE_SIZE),entry2_Avg(SAMPLE_SIZE); // For VL53L0X
@@ -213,6 +213,7 @@ void allTOFReadings()
 {  
   sensor->srTOF_Values();
   sensor->lrTOF_Values();
+  Serial.println("Updating TOF Values");
 }
 
 void allUSValues()

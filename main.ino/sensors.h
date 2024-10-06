@@ -97,4 +97,6 @@ int get_trTOF();
 int get_blTOF();
 int get_tlTOF();
 
+extern Sensors *sensor;
+
 #endif // SENSORS_H

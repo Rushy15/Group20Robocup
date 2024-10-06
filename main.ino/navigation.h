@@ -42,4 +42,5 @@ void general_navigation();
 void weightDetection(bool direction);
 void nav_loop(bool weight_detected);
 
+extern Navigation *navigation; 
 #endif // NAVIGATION_H

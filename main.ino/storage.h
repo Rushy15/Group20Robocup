@@ -61,4 +61,5 @@ uint16_t getR();
 uint16_t getG();
 uint16_t getB();
 
+extern Storage *storage;
 #endif // STORAGE_H

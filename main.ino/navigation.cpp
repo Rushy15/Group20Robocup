@@ -44,7 +44,7 @@ unsigned long homeBaseStartTime = 0;
 bool isStuck = false;
 bool atHomeBase = false;
 
-Navigation *navigation = new Navigation();
+Navigation *navigation = nullptr;
 
 void Navigation::navigation_setup()
 {

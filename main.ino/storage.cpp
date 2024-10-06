@@ -2,7 +2,7 @@
 #include "storage.h"
 // #include "navigation.h"
 
-Storage *storage = new Storage();
+Storage *storage = nullptr;
 
 void Storage::colour_sensor_setup()
 {

@@ -14,4 +14,6 @@ void reverseDrum();
 void stopDrum();
 void spinDrum();
 
+extern Collection *collection;
+
 #endif // COLLECTION_H
