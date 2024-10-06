@@ -127,19 +127,6 @@ void printingSensorValues()
   Serial.print('\t');
   Serial.print("Right US: ");
   Serial.println(r_us);
-  // int start = millis();
-  // nav_loop();
-  // if (weight_entered()) {
-  //   collect_weight();
-  //   storing();
-  //   if (weightInBarrel()) {
-  //     if (ps == 1) {
-  //       store_weight();
-  //     } else {
-  //       remove_weight();
-  //     }
-  //   }  
-  // }
 }
 
 void printingColourData()
@@ -294,7 +281,7 @@ FSM for dealing with the different states the robot can be in
 void FSMHandler()
 {
   switch (currentState) {
-    case 0: // IDLE - One time call, used to read colour sensor data and initialise a homebase
+    case 0: { // IDLE - One time call, used to read colour sensor data and initialise a homebase
       disableAllTasks();
       if (colourDataCollected == false) {
         updateColourData.enable();
@@ -302,8 +289,8 @@ void FSMHandler()
       currentState = NAVIGATION;
       disableAllTasks();
       break;
-
-    case 1: // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
+    }
+    case 1: { // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
       disableAllTasksExcept(generalNav);
 
       if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
@@ -318,8 +305,8 @@ void FSMHandler()
         currentState = COLLECTION;
         disableAllTasks();
         break;
-    
-    case 2: // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
+    }
+    case 2: { // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
       int start = millis();
       int end;
       while (get_barrel() > WEIGHT_IN_BARREL_LIMIT) {
@@ -343,8 +330,8 @@ void FSMHandler()
       currentState = STORAGE;
       disableAllTasks();
       break;
-
-    case 3: // STORAGE - Stores/Removes the weight that has entered the barrel
+    }
+    case 3: { // STORAGE - Stores/Removes the weight that has entered the barrel
       disableAllTasks();
       if (get_barrel() < WEIGHT_IN_BARREL_LIMIT && isRemovingWeight) {
         storeWeight.enable();
@@ -356,11 +343,12 @@ void FSMHandler()
       }
       currentState = NAVIGATION;
       break;
-
-    case 4: // WALL_FOLLOWING - Peforms wall-following until the homebase is reached
+    }
+    case 4: { // WALL_FOLLOWING - Peforms wall-following until the homebase is reached
       disableAllTasksExcept(wallFollowingNav);
       currentState = NAVIGATION;
       break;
+    }
   }
 }
 }
