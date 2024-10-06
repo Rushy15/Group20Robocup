@@ -234,11 +234,11 @@ void wallFollowingCallback()
   }
 }
 
-/* 
-- Defining the different tasks used within the scheduler
-- Each task is defined as a 'Callback' function that will be called at a specific interval
-- Look at above description to understand the format for initialising tasks
- */
+/*                                                                                         
+  -> Defining the different tasks used within the scheduler
+  -> Each task is defined as a 'Callback' function that will be called at a specific interval
+  -> Look at above description to understand the format for initialising tasks *
+*/
 
 Task updateTOFData(300, TASK_FOREVER, &allTOFReadings, &ts, true);
 Task updateUSData(1000, TASK_FOREVER, &allUSValues, &ts, false);
