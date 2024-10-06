@@ -1,4 +1,4 @@
-#include <TaskScheduler.h>
+#include <TaskScheduler.h> // https://github.com/arkhipenko/TaskScheduler/tree/master
 
 #include "navigation.h"
 #include "sensors.h"
@@ -6,6 +6,7 @@
 #include "collection.h"
 #include "imu.h"
 
+/* Enum that stores different states for the FSM */
 enum State {
   IDLE = 0,
   NAVIGATION,
@@ -14,8 +15,8 @@ enum State {
   WALL_FOLLOWING,
 };
 
-State currentState = IDLE;
-Scheduler ts;
+State currentState = IDLE; /* Initialise the current state of the FSM to IDLE */
+Scheduler ts; /* Creating a task scheduler variable */
 
 bool isRemovingWeight = false;
 bool colourDataCollected = false;
@@ -32,6 +33,7 @@ bool colourDataCollected = false;
 
 #define ANGLE_TO_TURN_DURING_UNLOADING 90 // Can assign a max value of 180 
 
+/* Creating local pointers to the different classes */
 Sensors *sensor_ptr;
 Navigation *navigation_ptr;
 Storage *storage_ptr;
@@ -82,6 +84,7 @@ This function is called when the task finishes or is disabled. It is used to cle
 If no callback is needed, you can pass NULL.
 */
 
+                                              /* Printing functions for Serial */
 void printingSensorValues()
 {
   int l_us = get_lUS();
@@ -167,6 +170,8 @@ void printingIMUData()
   }
 }
 
+                                              /* Callback functions for tasks */
+
 void updateColourDataCallback()
 {
   /* Getting colour of home base - One time loop at startup*/
@@ -242,6 +247,11 @@ void wallFollowingCallback()
   }
 }
 
+/* 
+- Defining the different tasks used within the scheduler
+- Each task is defined as a 'Callback' function that will be called at a specific interval
+- Look at above description to understand the format for initialising tasks
+ */
 
 Task updateTOFData(300, TASK_FOREVER, &allTOFReadings, &ts, true);
 Task updateUSData(1000, TASK_FOREVER, &allUSValues, &ts, false);
@@ -254,7 +264,9 @@ Task wallFollowingNav(10000, TASK_FOREVER, &wallFollowingCallback, &ts, false);
 Task collectWeight(16000, TASK_FOREVER, &collectWeightCallback, &ts, false);
 Task storeWeight(2000, TASK_FOREVER, &storeWeightCallback, &ts, false);
 
-
+/*
+Helper Function for disabling all tasks
+*/
 void disableAllTasks() {
     // updateTOFData.disable();
     updateUSData.disable();
@@ -268,16 +280,21 @@ void disableAllTasks() {
     storeWeight.disable();
 }
 
+/*
+Helper Function for disabling all tasks except for a specified task - 'task'
+*/
 void disableAllTasksExcept(Task &task) {
     disableAllTasks();
     task.enable();
 }
 
+/*
+FSM for dealing with the different states the robot can be in
+*/
 void FSMHandler()
 {
   switch (currentState) {
-    case 0: // IDLE
-      // Read Colour Data
+    case 0: // IDLE - One time call, used to read colour sensor data and initialise a homebase
       disableAllTasks();
       if (colourDataCollected == false) {
         updateColourData.enable();
@@ -286,7 +303,7 @@ void FSMHandler()
       disableAllTasks();
       break;
 
-    case 1: // NAVIGATION
+    case 1: // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
       disableAllTasksExcept(generalNav);
 
       if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
@@ -302,7 +319,7 @@ void FSMHandler()
         disableAllTasks();
         break;
     
-    case 2: // COLLECTION
+    case 2: // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
       int start = millis();
       int end;
       while (get_barrel() > WEIGHT_IN_BARREL_LIMIT) {
@@ -327,27 +344,26 @@ void FSMHandler()
       disableAllTasks();
       break;
 
-    case 3: // STORAGE
+    case 3: // STORAGE - Stores/Removes the weight that has entered the barrel
       disableAllTasks();
       if (get_barrel() < WEIGHT_IN_BARREL_LIMIT && isRemovingWeight) {
         storeWeight.enable();
       }
       disableAllTasks();
-      if (max_capacity()) {
+      if (max_capacity()) { // Only enters wall following mode when it is at max_capacity
         currentState = WALL_FOLLOWING;
         break;
       }
       currentState = NAVIGATION;
       break;
 
-    case 4: // WALL_FOLLOWING
+    case 4: // WALL_FOLLOWING - Peforms wall-following until the homebase is reached
       disableAllTasksExcept(wallFollowingNav);
       currentState = NAVIGATION;
       break;
   }
 }
 }
-
 
 void setup() {
   // put your setup code here, to run once:
