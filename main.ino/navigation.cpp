@@ -3,19 +3,22 @@
 #include "storage.h"
 
 #define frontTOFLimit 300//300 for general navigation
+#define frontTOFWFLimit 350//wall following limit
 #define frontTOFMinimum 500
+#define frontTOFWFMinimum 500
 #define rUSLimit 15
 #define lUSLimit 15
 #define weightDetectingDistance 130// Difference between long range TOFs to turn the robot if a weight is detected
 #define weightDetectingDistanceMax 1200
 #define topLevel_longRangeTOFLimit 170
+#define topLevel_longRangeTOFWFLimit 200
 #define WallfollowingLimit 25
 
 
-#define FWR_FULL 1950
-#define FWL_FULL 1050
-#define BWR_FULL 1050  
-#define BWL_FULL 1950
+#define FWR_FULL 1900
+#define FWL_FULL 1100
+#define BWR_FULL 1100  
+#define BWL_FULL 1900
 
 #define FWR 1850
 #define FWL 1150
@@ -28,6 +31,15 @@
 #define BWL_SLOW 1780
 
 #define N 1500 // Neutral Speed
+
+#define STUCK_THRESHOLD 3000 // Time in milliseconds to consider stuck
+#define HOME_BASE_THRESHOLD 5000 // Time in milliseconds to stay at home base
+#define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
+
+unsigned long stuckStartTime = 0;
+unsigned long homeBaseStartTime = 0;
+bool isStuck = false;
+bool atHomeBase = false;
 
 Navigation *navigation = nullptr;
 
@@ -81,6 +93,16 @@ void Navigation::roll_left()
   Lservo.writeMicroseconds(N); 
 }
 
+int angleToTurn(int currentHeadingAngle, int angleToTurn)
+{
+  if ((currentHeadingAngle + angleToTurn) <= 360) {
+    return currentHeadingAngle + angleToTurn;
+  } else {
+    return ((currentHeadingAngle + angleToTurn) - 360);
+  }
+  return 0;
+}
+
 void Navigation::general_navigation()
 {
   // allTOFReadings();
@@ -88,6 +110,8 @@ void Navigation::general_navigation()
   int mTOF = get_mTOF();
   int tr_tof = get_trTOF();
   int tl_tof = get_tlTOF();
+
+
 
   if (mTOF < frontTOFLimit){ //units in mm
     if (tr_tof < tl_tof){
@@ -196,7 +220,7 @@ void wallFollowing()
   }
 
   if (navigation->walldetected_bool == true) {
-    if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))||(get_trTOF() < topLevel_longRangeTOFLimit)) {
+    if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))||(get_trTOF() < topLevel_longRangeTOFWFLimit)) {
     while (mTOF < frontTOFLimit) {
       Serial.println("Stuck Here 1");
         allTOFReadings();
@@ -210,7 +234,7 @@ void wallFollowing()
   }
   
   else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
-    while ((r_us > WallfollowingLimit) && (trTOF > frontTOFLimit) && (mTOF > frontTOFLimit)) {
+    while ((r_us > WallfollowingLimit) && (trTOF > topLevel_longRangeTOFWFLimit) && (mTOF > frontTOFLimit)) {
       Serial.println("Stuck Here 2");
       allTOFReadings();
       allUSValues();
@@ -260,6 +284,41 @@ void wallFollowing()
   // }
 }
 
+void check_stuck_condition() {
+    // Check if robot is stuck in the corner
+    //Serial.print("Stuck");
+    uint16_t frontLeft = get_tlTOF();
+    uint16_t frontRight = get_trTOF();
+    uint16_t middle = get_mTOF();
+
+    // Check if all front sensors detect an object close
+    if (frontLeft < topLevel_longRangeTOFLimit && frontRight < topLevel_longRangeTOFLimit) {
+        if (!isStuck) {
+            stuckStartTime = millis(); // Start timer
+            Serial.println("Stuck1");
+            isStuck = true;
+        } else if (millis() - stuckStartTime >= STUCK_THRESHOLD) {
+            navigation->reverse();
+            delay(2000);
+            Serial.println("Stuck2");
+            isStuck = false; // Reset stuck state after reversing
+        }
+    } else {
+        isStuck = false; // Reset if not stuck
+    }
+
+    // Check if at home base (using color sensor)
+    // if (isAtHomeBase()) { // You need to implement this function
+    //     if (!atHomeBase) {
+    //         homeBaseStartTime = millis(); // Start timer
+    //         atHomeBase = true;
+    //     } else if (millis() - homeBaseStartTime >= HOME_BASE_THRESHOLD) {
+    //         reverse(REVERSE_DURATION);
+    //         atHomeBase = false; // Reset home base state after reversing
+    //     }
+    // } else {
+    //     atHomeBase = false; // Reset if not at home base
+    }
 
 void nav_loop() 
 {
@@ -275,16 +334,17 @@ void nav_loop()
   //       br = get_brTOF();
   //       tl = get_tlTOF();
   //       bl = get_blTOF();
-        if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
-          //Serial.print("Gotcha1");
-          navigation -> weightDetection(1);
-        } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
-          //Serial.print("Gotcha2");
-          navigation -> weightDetection(0);
-        }
-        else {
-          navigation->general_navigation();
-        }
+  check_stuck_condition();
+  if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
+    //Serial.print("Gotcha1");
+    navigation -> weightDetection(1);
+  } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
+    //Serial.print("Gotcha2");
+    navigation -> weightDetection(0);
+  }
+  else {
+    navigation->general_navigation();
+  }
     
   // }
    

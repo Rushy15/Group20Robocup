@@ -17,7 +17,7 @@ class Storage {
     static const uint8_t first_slot = 93;
     static const uint8_t third_slot_discard = 76;
     static const uint8_t second_slot_discard = 36;        
-    static const uint8_t first_slot_discard = 0 ;  
+    static const uint8_t first_slot_discard = 0 ;
 
     
     int front_tof;

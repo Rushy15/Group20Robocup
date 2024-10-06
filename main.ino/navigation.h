@@ -11,6 +11,7 @@ class Navigation {
     
   public:
   bool walldetected_bool = false;
+  bool robotstuck_bool = false;
 
     void go_straight();
     void turn_left();
@@ -27,6 +28,7 @@ class Navigation {
 
 // bool endOfWall = false;
 
+int angleToTurn(int currentHeadingAngle, int angleToTurn);
 void nav_loop();
 void wallFollowing();
 void walldetected();

@@ -2,6 +2,7 @@
 #include "sensors.h"
 #include "storage.h"
 #include "collection.h"
+#include "imu.h"
 
 bool isRemovingWeight = false;
 bool colourDataCollected = false;
@@ -10,6 +11,8 @@ bool colourDataCollected = false;
 #define ENTRY_MAX 150
 #define ENTRY2_MIN 30
 #define ENTRY2_MAX 100
+
+#define ANGLE_TO_TURN_DURING_UNLOADING 180 // Can assign a max value of 180 
 
 void printingSensorValues()
 {
@@ -82,6 +85,20 @@ void printingColourData()
   Serial.println(b);
 }
 
+void printingIMUData()
+{
+  if (imu_ptr->printCount * BNO055_SAMPLERATE_DELAY_MS >= PRINT_DELAY_MS) {
+    //enough iterations have passed that we can print the latest data
+    Serial.print("Heading: ");
+    Serial.println(imu_ptr->orientationData.orientation.x);
+
+    imu_ptr->printCount = 0;
+  }
+  else {
+    imu_ptr->printCount = imu_ptr->printCount + 1;
+  }
+}
+
 void setup() {
   // put your setup code here, to run once:
   if (sensor == nullptr) {
@@ -100,20 +117,28 @@ void setup() {
     collection = new Collection();
   }
 
+  if (imu_ptr == nullptr) {
+    imu_ptr = new IMU();
+  }
+
   navigation -> navigation_setup();
   sensor -> sensor_setup();
   storage -> storage_setup();
   collection -> collection_setup();
+  imu_ptr -> imu_setup();
+
   Serial.println("Goodbye");
   
 }
 
 void loop() {
   allTOFReadings();
-  //allUSValues();
-  //printingSensorValues();
+  imu_loop();
 
-  //wallFollowing();
+  //printingSensorValues();
+  printingIMUData();
+
+  /* Getting colour of home base - One time loop at startup*/
   int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
   while(colourDataCollected == false) {
     int end_collecting = millis();
@@ -124,16 +149,15 @@ void loop() {
     }
   }
   
-  
   /* State Machine for the robot */
   nav_loop();
   
-  
+  /* Checking to see if a weight has entered the channel of the robot */
   if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  /* Only check if not currently removing */
       isRemovingWeight = true;
       navigation -> go_straight();
-      delay(1000);
+      delay(500);
       navigation -> stop();
       delay(500);
       int start = millis();
@@ -143,19 +167,22 @@ void loop() {
           spinDrum();
           storage->psState = read_psState();
           end = millis();
-          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 12 seconds */
+          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 14 seconds */
             while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
+              allTOFReadings();
               end = millis();
               reverseDrum();
               navigation -> reverse();
               isRemovingWeight = false;
             }
+            isRemovingWeight = false;
             stopDrum();
             break;
           }
       }
   }
 
+  /* Checking to see if the weight has entered the barrel */
   if (get_barrel() < 100 && isRemovingWeight) {
       navigation -> stop();
       stopDrum();
@@ -164,12 +191,21 @@ void loop() {
       isRemovingWeight = false;  /* Reset flag once the barrel has returned */
   }
 
+  /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
     wallFollowing();
     updateColourValues();
     printingColourData();
     if (inHomeBase()) {
+      delay(1000);
+      int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+      int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
       navigation -> stop();
+      while (abs(current_angle - desired_angle) < 10) {
+        navigation->turn_left();
+        current_angle = get_headingAngle(0);
+        imu_loop();
+      } 
       reset_capacity();
     }
   }
