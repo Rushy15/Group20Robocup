@@ -25,6 +25,4 @@ class IMU {
 void imu_loop();
 int get_headingAngle(int direction);
 
-extern IMU *imu_ptr;
-
 #endif // IMU_H

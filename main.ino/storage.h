@@ -25,16 +25,15 @@ class Storage {
   public:
     static const int sensor = A7;
     Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
-    // int psState_reading;
+  
     uint8_t psState; // Final Value used within the FSM
 
     unsigned long Timer1, currTimer;  
     unsigned long prevTimer = 0;
-    uint8_t weights_collected = 3;
+    uint8_t weights_collected = 0;
     uint8_t finished_storing = 0;
 
     uint16_t clear, red, green, blue;
-
     uint16_t red_homebase, green_homebase, blue_homebase;
     
     // uint16_t r, g, b; // Final values to be used
@@ -48,6 +47,8 @@ class Storage {
 };
 
 int read_psState();
+void set_psState(int state);
+
 void storing(uint8_t proximityState);
 bool max_capacity();
 void reset_capacity();
@@ -59,7 +60,5 @@ bool inHomeBase();
 uint16_t getR();
 uint16_t getG();
 uint16_t getB();
-
-extern Storage *storage;
 
 #endif // STORAGE_H

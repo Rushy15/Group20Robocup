@@ -1,10 +1,11 @@
 #include "imu.h"
 
-// Check I2C device address and correct line below (by default address is 0x29 or 0x28)
-//                                   id, address
+/* Check I2C device address and correct line below (by default address is 0x29 or 0x28)
+                                   id, address 
+*/
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28);
 
-IMU *imu_ptr = nullptr;
+IMU *imu_ptr_1 = new IMU();
 
 void IMU::imu_setup() {
   Serial.println("Orientation Sensor Test"); Serial.println("");
@@ -21,7 +22,7 @@ void IMU::imu_setup() {
 void imu_loop(void)
 {
   unsigned long tStart = micros();
-  imu_ptr->bno.getEvent(&(imu_ptr->orientationData), Adafruit_BNO055::VECTOR_EULER);
+  imu_ptr_1->bno.getEvent(&(imu_ptr_1->orientationData), Adafruit_BNO055::VECTOR_EULER);
   // bno.getEvent(&angVelData, Adafruit_BNO055::VECTOR_GYROSCOPE);
   // bno.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
 
@@ -35,11 +36,11 @@ int get_headingAngle(int direction)
 {
   switch(direction) {
     case 0:
-      return imu_ptr->orientationData.orientation.x;
+      return imu_ptr_1->orientationData.orientation.x;
     case 1:
-      return imu_ptr->orientationData.orientation.y;
+      return imu_ptr_1->orientationData.orientation.y;
     case 2:
-      return imu_ptr->orientationData.orientation.z;
+      return imu_ptr_1->orientationData.orientation.z;
   }
   return 0;
 }

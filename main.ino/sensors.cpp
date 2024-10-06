@@ -8,7 +8,8 @@
 //#define LONG_RANGE
 #define HIGH_SPEED
 //#define HIGH_ACCURACY
-Sensors *sensor = nullptr;
+Sensors *sensor = new Sensors();
+
 movingAvg lUS_Avg(SAMPLE_SIZE), rUS_Avg(SAMPLE_SIZE); // For Ultrasound 
 movingAvg mTOF_Avg(SAMPLE_SIZE), entry_Avg(SAMPLE_SIZE), barrel_Avg(SAMPLE_SIZE),entry2_Avg(SAMPLE_SIZE); // For VL53L0X
 movingAvg trTOF_Avg(SAMPLE_SIZE), tlTOF_Avg(SAMPLE_SIZE), brTOF_Avg(SAMPLE_SIZE), blTOF_Avg(SAMPLE_SIZE); // For VL53L1X
@@ -219,7 +220,7 @@ void allUSValues()
   sensor->us_Values();
 }
 
-// Function for reading and writing from ultrasonic sensors 
+/* Function for reading and writing from ultrasonic sensors */
 float Sensors::ping(int32_t trigPin, int32_t echoPin) {
   digitalWrite(trigPin, LOW);
   int start = micros();
@@ -231,6 +232,20 @@ float Sensors::ping(int32_t trigPin, int32_t echoPin) {
   duration = pulseIn(echoPin, HIGH);
   distance = (duration * .0343) / 2;
   return distance;
+}
+
+/* Final Setup Function for Sensors */
+void Sensors::sensor_setup()
+{
+  // Start of Init
+  Serial.begin(115200);
+  io.begin(SX1509_ADDRESS);
+  Wire.begin();
+  Wire.setClock(400000);
+  
+  srTOF_Setup();
+  lrTOF_Setup();
+  usSetup();
 }
 
 /* Functions for getting sensor values */
@@ -282,18 +297,4 @@ int get_blTOF()
 int get_tlTOF()
 {
   return *(sensor->tlTOF);
-}
-
-/* Final Setup Function for Sensors */
-void Sensors::sensor_setup()
-{
-  // Start of Init
-  Serial.begin(115200);
-  io.begin(SX1509_ADDRESS);
-  Wire.begin();
-  Wire.setClock(400000);
-  
-  srTOF_Setup();
-  lrTOF_Setup();
-  usSetup();
 }
