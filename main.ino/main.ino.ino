@@ -106,151 +106,6 @@ void printingIMUData()
   }
 }
 
-                                              /* Callback functions for tasks */
-
-void updateColourData()
-{
-  /* Getting colour of home base - One time loop at startup*/
-  start_collecting = millis();
-  while(colourDataCollected == false) {
-    Serial.println("Updating Colours");
-    int end_collecting = millis();
-    collectingColourData();
-    printingColourData();
-    Serial.print(end_collecting - start_collecting);
-    if ((end_collecting - start_collecting) > 3000) {
-      colourDataCollected = true;
-    }
-  }
-}
-
-void wallFollowingCallback()
-{
-  while (max_capacity()) {
-    wallFollowing();
-    updateColourValues();
-    // printingColourData();
-    if (inHomeBase()) {
-      go_straight();
-      delay(1000);
-      int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
-      int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
-      int angle_to_turn = abs(current_angle - desired_angle);
-
-      // Serial.print("Current Angle");
-      // Serial.print(current_angle);
-      // Serial.print('\t');
-      // Serial.print("Desired Angle");
-      // Serial.print(desired_angle);
-      // Serial.print('\t');
-      // Serial.print("Difference");
-      // Serial.println(angle_to_turn);
-
-      stop();
-
-      while (reachedDesiredHeadingAngle(desired_angle) == false) {
-        turn_left();
-        imu_loop();
-        // current_angle = get_headingAngle(0);
-        // angle_to_turn = abs(current_angle - desired_angle);
-        
-        // Serial.print("Current Angle in Loop");
-        // Serial.println(current_angle);
-      } 
-      stop();
-      reset_capacity();
-    }
-  }
-}
-
-/*
-FSM for dealing with the different states the robot can be in
-*/
-void FSMHandler()
-{
-  switch (currentState) {
-    case IDLE: // IDLE - One time call, used to read colour sensor data and initialise a homebase
-      if (colourDataCollected == false) {
-        updateColourData();
-      }
-      currentState = IDLE;
-      break;
-    
-    case NAVIGATION: // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
-      nav_loop(get_weight_detected_bool());
-      Serial.print("NAVIGATION");
-      if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
-        && !isRemovingWeight) {  /* Only check if not currently removing */
-        isRemovingWeight = true;
-        Serial.print("Condition Hit");
-        go_straight();
-        delay(500);
-        stop();
-        delay(500);
-        
-        currentState = COLLECTION;
-        break;
-      } else {
-        Serial.print("Enabling General Navigation");
-        currentState = NAVIGATION;
-        Serial.println("Navigating 1");
-        break;
-      }
-      Serial.println("Navigating 2");
-      break;
-    
-    case COLLECTION: // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
-      int start = millis();
-      int end;
-      while (get_barrel() > WEIGHT_IN_BARREL_LIMIT) {
-        end = millis();
-        allTOFReadings();
-        spinDrum();
-        set_psState(read_psState());
-        if ((end - start) > MAX_COLLECTING_TIME) {  /* Check to see if nothing has been collected in 14 seconds */
-          while ((end - start) < REVERSE_SYSTEM_TIME) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
-            allTOFReadings();
-            end = millis();
-            reverseDrum();
-            reverse();
-            
-            isRemovingWeight = false;
-          }
-          isRemovingWeight = false;
-          stopDrum();
-          currentState = NAVIGATION;
-          break;
-        }  
-      }
-      currentState = STORAGE;
-      break;
-    
-    case STORAGE: // STORAGE - Stores/Removes the weight that has entered the barrel
-      if (get_barrel() < WEIGHT_IN_BARREL_LIMIT && isRemovingWeight) {
-        stop();
-        stopDrum();
-        storing(read_psState());
-        Serial.print("passing");
-        isRemovingWeight = false;  /* Reset flag once the barrel has returned */
-      }
-      if (max_capacity()) { // Only enters wall following mode when it is at max_capacity
-        currentState = WALL_FOLLOWING;
-        break;
-      }
-      currentState = NAVIGATION;
-      break;
-    
-    case WALL_FOLLOWING:  // WALL_FOLLOWING - Peforms wall-following until the homebase is reached
-      wallFollowingCallback();
-      currentState = NAVIGATION;
-      break;
-
-    default:
-      currentState = IDLE;
-      break;
-}
-}
-
 void setup() {
   // put your setup code here, to run once:
   if (sensor == nullptr) {
@@ -282,12 +137,101 @@ void setup() {
   Serial.println("Goodbye");
 }
 
-void loop() {
-  Serial.print("Executing Task: ");
-  Serial.println(currentState);
-  delay(500);
-  FSMHandler();
-  delay(500);
-  // printingSensorValues();
-  // printingIMUData();
+void loop() 
+{
+  allTOFReadings();
+  imu_loop();
+
+  //printingSensorValues();
+  printingIMUData();
+
+  /* Getting colour of home base - One time loop at startup*/
+  int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
+  while(colourDataCollected == false) {
+    int end_collecting = millis();
+    collectingColourData();
+    printingColourData();
+    if ((end_collecting - start_collecting) > 3000) {
+      colourDataCollected = true;
+    }
+  }
+  
+  /* State Machine for the robot */  
+  nav_loop(navigation->weight_detcted_bool);
+
+  
+  /* Checking to see if a weight has entered the channel of the robot */
+  if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
+        && !isRemovingWeight) {  /* Only check if not currently removing */
+      isRemovingWeight = true;
+      go_straight();
+      delay(500);
+      stop();
+      delay(500);
+      int start = millis();
+      int end;
+      while (get_barrel() > 100) {
+          allTOFReadings();
+          spinDrum();
+          set_psState(read_psState());
+          end = millis();
+          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 14 seconds */
+            while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
+              allTOFReadings();
+              end = millis();
+              reverseDrum();
+              reverse();
+              isRemovingWeight = false;
+            }
+            isRemovingWeight = false;
+            stopDrum();
+            break;
+          }
+      }
+  }
+
+  /* Checking to see if the weight has entered the barrel */
+  if (get_barrel() < 100 && isRemovingWeight) {
+      stop();
+      stopDrum();
+      storing(get_psState());
+      Serial.print("passing");
+      isRemovingWeight = false;  /* Reset flag once the barrel has returned */
+  }
+
+  // /* Checking to see if the robot has collected three weights and is at full capacicty*/
+  while (max_capacity()) {
+    wallFollowing();
+    updateColourValues();
+    printingColourData();
+    if (inHomeBase()) {
+      go_straight();
+      delay(1000);
+      int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+      int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
+      // int angle_to_turn = abs(current_angle - desired_angle);
+
+      // Serial.print("Current Angle");
+      // Serial.print(current_angle);
+      // Serial.print('\t');
+      // Serial.print("Desired Angle");
+      // Serial.print(desired_angle);
+      // Serial.print('\t');
+      // Serial.print("Difference");
+      // Serial.println(angle_to_turn);
+
+      stop();
+      while (reachedDesiredHeadingAngle(desired_angle) == false) {
+        turn_left();
+        imu_loop();
+        // current_angle = get_headingAngle(0);
+        // angle_to_turn = abs(current_angle - desired_angle);
+        
+        // Serial.print("Current Angle in Loop");
+        // Serial.println(current_angle);
+      } 
+      stop();
+      reset_capacity();
+    }
+  }
 }

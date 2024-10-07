@@ -213,7 +213,6 @@ void allTOFReadings()
 {  
   sensor->srTOF_Values();
   sensor->lrTOF_Values();
-  Serial.println("Updating TOF Values");
 }
 
 void allUSValues()

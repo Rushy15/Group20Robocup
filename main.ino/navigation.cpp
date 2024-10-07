@@ -15,10 +15,10 @@
 #define BWR_SLOW 1220  
 #define BWL_SLOW 1780
 
-#define FWR_FULL 1900
-#define FWL_FULL 1100
-#define BWR_FULL 1100
-#define BWL_FULL 1900
+#define FWR_FULL 1950
+#define FWL_FULL 1050
+#define BWR_FULL 1050
+#define BWL_FULL 1950
 
 #define STUCK_THRESHOLD 3000 // Time in milliseconds to consider stuck
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
@@ -60,18 +60,18 @@ void stop()
 }
 
 void turn_left() {
-    navigation->Rservo.writeMicroseconds(FWR);  
-    navigation->Lservo.writeMicroseconds(BWL);
+    navigation->Rservo.writeMicroseconds(FWR_FULL);  
+    navigation->Lservo.writeMicroseconds(BWL_FULL);
 }
 
 void turn_right() {
-    navigation->Rservo.writeMicroseconds(BWR);  
-    navigation->Lservo.writeMicroseconds(FWL); 
+    navigation->Rservo.writeMicroseconds(BWR_FULL);  
+    navigation->Lservo.writeMicroseconds(FWL_FULL); 
 }
 
 void go_straight() {
-  navigation->Rservo.writeMicroseconds(FWR);  
-  navigation->Lservo.writeMicroseconds(FWL);  
+  navigation->Rservo.writeMicroseconds(FWR_FULL);  
+  navigation->Lservo.writeMicroseconds(FWL_FULL);  
 }
 
 void reverse() {

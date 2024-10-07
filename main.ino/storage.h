@@ -48,6 +48,7 @@ class Storage {
 
 int read_psState();
 void set_psState(int state);
+uint8_t get_psState();
 
 void storing(uint8_t proximityState);
 bool max_capacity();
