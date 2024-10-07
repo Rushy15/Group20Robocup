@@ -136,7 +136,8 @@ void loop() {
     }
   }
   
-  /* State Machine for the robot */  nav_loop(navigation->weight_detcted_bool);
+  /* State Machine for the robot */  
+  // nav_loop(navigation->weight_detcted_bool);
 
   
   /* Checking to see if a weight has entered the channel of the robot */
