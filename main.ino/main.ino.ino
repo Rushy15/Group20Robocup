@@ -1,5 +1,3 @@
-#include <TaskScheduler.h> // https://github.com/arkhipenko/TaskScheduler/tree/master
-
 #include "navigation.h"
 #include "sensors.h"
 #include "storage.h"
@@ -12,12 +10,10 @@ typedef enum {
   NAVIGATION,
   COLLECTION,
   STORAGE,
-  WALL_FOLLOWING,
+  WALL_FOLLOWING
 } RobotState_t;
 
 RobotState_t currentState = IDLE; /* Initialise the current state of the FSM to IDLE */
-
-Scheduler ts; /* Creating a task scheduler variable */
 
 bool isRemovingWeight = false;
 bool colourDataCollected = false;
@@ -36,56 +32,6 @@ int start_collecting;
 
 #define ANGLE_TO_TURN_DURING_UNLOADING 90 // Can assign a max value of 180 
 
-/* Creating local pointers to the different classes */
-// Sensors *sensor_ptr;
-// Navigation *navigation_ptr;
-// Storage *storage_ptr;
-// Collection *collection_ptr;
-// IMU *imu_ptr;
-
-/*
---------------------------------------------------------------------------------------------------------------------------
-| FORMAT: Task tTaskName(period, iterations, callbackFunction, scheduler, enabled, onEnableCallback, onDisableCallback); |
---------------------------------------------------------------------------------------------------------------------------
-period (in milliseconds):
--------------------------
-The interval or delay between task executions. If period = 10000L, the task will run every 10 seconds (10000 milliseconds).
-If period = 0, the task runs as fast as possible (continuous execution).
-You can modify this later with setInterval().
-
-iterations (number of times the task runs):
--------------------------------------------
-This indicates how many times the task will execute before stopping.
-TASK_FOREVER means the task will keep running indefinitely.
-TASK_ONCE means the task will run only once and then stop.
-You can also specify a specific number like 5 to run the task 5 times.
-
-callbackFunction (the function to execute):
--------------------------------------------
-This is a pointer to the function that will be called each time the task is run. It should match the required signature void callbackFunction().
-If no function is provided, you can pass NULL, which is often the case when using onEnable or onDisable methods to control the task’s behavior.
-
-scheduler (the task scheduler object):
---------------------------------------
-The scheduler object that manages the task. All tasks must be associated with a Scheduler instance, in this case, &ts.
-This is important for ensuring that tasks are properly managed and can run concurrently or sequentially.
-
-enabled (whether the task starts enabled):
-------------------------------------------
-A boolean (true or false) indicating if the task should start enabled when the program begins.
-true: The task will start running immediately when the program starts.
-false: The task will be created but not start until manually enabled via enable() or restart().
-
-onEnableCallback (optional callback function when task is enabled):
--------------------------------------------------------------------
-This function is called once when the task is enabled. It is optional but allows you to set up the task’s behavior when it first starts or restarts.
-If no callback is needed, you can pass NULL.
-
-onDisableCallback (optional callback function when task is disabled):
----------------------------------------------------------------------
-This function is called when the task finishes or is disabled. It is used to clean up, stop hardware, or reset values.
-If no callback is needed, you can pass NULL.
-*/
 
                                               /* Printing functions for Serial */
 void printingSensorValues()
@@ -162,7 +108,7 @@ void printingIMUData()
 
                                               /* Callback functions for tasks */
 
-void updateColourDataCallback()
+void updateColourData()
 {
   /* Getting colour of home base - One time loop at startup*/
   start_collecting = millis();
@@ -176,30 +122,6 @@ void updateColourDataCallback()
       colourDataCollected = true;
     }
   }
-}
-
-void generalNavCallback()
-{
-  /* State Machine for the robot */
-  Serial.print("Entering Nav Loop");
-  nav_loop(get_weight_detected_bool());
-  Serial.print("Exited Nav Loop");
-}
-
-void collectWeightCallback()
-{
-  allTOFReadings();
-  spinDrum();
-  set_psState(read_psState());
-}
-
-void storeWeightCallback()
-{
-  stop();
-  stopDrum();
-  storing(read_psState());
-  Serial.print("passing");
-  isRemovingWeight = false;  /* Reset flag once the barrel has returned */
 }
 
 void wallFollowingCallback()
@@ -241,68 +163,22 @@ void wallFollowingCallback()
   }
 }
 
-/*                                                                                         
-  -> Defining the different tasks used within the scheduler
-  -> Each task is defined as a 'Callback' function that will be called at a specific interval
-  -> Look at above description to understand the format for initialising tasks *
-*/
-
-Task updateTOFData(300, TASK_FOREVER, &allTOFReadings, &ts, false);
-Task updateUSData(1000, TASK_FOREVER, &allUSValues, &ts, false);
-Task updateIMUData(300, TASK_FOREVER, &imu_loop, &ts, false);
-Task updateColourData(3000, TASK_FOREVER, &updateColourDataCallback, &ts, false);
-
-Task generalNav(1000, TASK_FOREVER, &generalNavCallback, &ts, false);
-Task wallFollowingNav(10000, TASK_FOREVER, &wallFollowingCallback, &ts, false);
-
-Task collectWeight(16000, TASK_FOREVER, &collectWeightCallback, &ts, false);
-Task storeWeight(2000, TASK_FOREVER, &storeWeightCallback, &ts, false);
-
-/*
-Helper Function for disabling all tasks
-*/
-void disableAllTasks() {
-    // updateTOFData.disable();
-    updateUSData.disable();
-    updateIMUData.disable();
-    updateColourData.disable();
-
-    generalNav.disable();
-    wallFollowingNav.disable();
-
-    collectWeight.disable();
-    storeWeight.disable();
-}
-
-/*
-Helper Function for disabling all tasks except for a specified task - 'task'
-*/
-void disableAllTasksExcept(Task &task) {
-    disableAllTasks();
-    task.enable();
-}
-
 /*
 FSM for dealing with the different states the robot can be in
 */
 void FSMHandler()
 {
   switch (currentState) {
-    case 0: { // IDLE - One time call, used to read colour sensor data and initialise a homebase
-      disableAllTasks();
+    case IDLE: // IDLE - One time call, used to read colour sensor data and initialise a homebase
       if (colourDataCollected == false) {
-        start_collecting = millis();
-        updateColourData.enable();
-        // printingColourData();
-      } else {
-        disableAllTasks();
-        currentState = NAVIGATION;
+        updateColourData();
       }
+      currentState = IDLE;
       break;
-    }
-    case 1: { // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
-      generalNav.enable();
-      Serial.println("ROBOCUP");
+    
+    case NAVIGATION: // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
+      nav_loop(get_weight_detected_bool());
+      Serial.print("NAVIGATION");
       if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  /* Only check if not currently removing */
         isRemovingWeight = true;
@@ -313,7 +189,6 @@ void FSMHandler()
         delay(500);
         
         currentState = COLLECTION;
-        disableAllTasks();
         break;
       } else {
         Serial.print("Enabling General Navigation");
@@ -323,13 +198,15 @@ void FSMHandler()
       }
       Serial.println("Navigating 2");
       break;
-    }
-    case 2: { // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
+    
+    case COLLECTION: // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
       int start = millis();
       int end;
       while (get_barrel() > WEIGHT_IN_BARREL_LIMIT) {
         end = millis();
-        collectWeight.enable();
+        allTOFReadings();
+        spinDrum();
+        set_psState(read_psState());
         if ((end - start) > MAX_COLLECTING_TIME) {  /* Check to see if nothing has been collected in 14 seconds */
           while ((end - start) < REVERSE_SYSTEM_TIME) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
             allTOFReadings();
@@ -346,30 +223,33 @@ void FSMHandler()
         }  
       }
       currentState = STORAGE;
-      disableAllTasks();
       break;
-    }
-    case 3: { // STORAGE - Stores/Removes the weight that has entered the barrel
-      disableAllTasks();
+    
+    case STORAGE: // STORAGE - Stores/Removes the weight that has entered the barrel
       if (get_barrel() < WEIGHT_IN_BARREL_LIMIT && isRemovingWeight) {
-        storeWeight.enable();
+        stop();
+        stopDrum();
+        storing(read_psState());
+        Serial.print("passing");
+        isRemovingWeight = false;  /* Reset flag once the barrel has returned */
       }
-      disableAllTasks();
       if (max_capacity()) { // Only enters wall following mode when it is at max_capacity
         currentState = WALL_FOLLOWING;
         break;
       }
       currentState = NAVIGATION;
       break;
-    }
-    case 4: { // WALL_FOLLOWING - Peforms wall-following until the homebase is reached
-      disableAllTasksExcept(wallFollowingNav);
+    
+    case WALL_FOLLOWING:  // WALL_FOLLOWING - Peforms wall-following until the homebase is reached
+      wallFollowingCallback();
       currentState = NAVIGATION;
       break;
-    }
-  }
-}
 
+    default:
+      currentState = IDLE;
+      break;
+}
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -398,24 +278,16 @@ void setup() {
   storage -> storage_setup();
   collection -> collection_setup();
   imu_ptr -> imu_setup();
-  
-  ts.addTask(updateUSData);
-  ts.addTask(updateIMUData);
-  ts.addTask(updateColourData);
-  ts.addTask(generalNav);
-  ts.addTask(wallFollowingNav);
-  ts.addTask(collectWeight);
-  ts.addTask(storeWeight);
 
   Serial.println("Goodbye");
 }
 
 void loop() {
-  FSMHandler();
-  ts.execute();
-
   Serial.print("Executing Task: ");
   Serial.println(currentState);
+  delay(500);
+  FSMHandler();
+  delay(500);
   // printingSensorValues();
   // printingIMUData();
 }
