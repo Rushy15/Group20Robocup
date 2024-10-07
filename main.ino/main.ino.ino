@@ -137,16 +137,16 @@ void loop() {
   }
   
   /* State Machine for the robot */  
-  // nav_loop(navigation->weight_detcted_bool);
+  nav_loop(navigation->weight_detcted_bool);
 
   
   /* Checking to see if a weight has entered the channel of the robot */
   if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  /* Only check if not currently removing */
       isRemovingWeight = true;
-      // navigation -> go_straight();
+      navigation -> go_straight();
       delay(500);
-      // navigation -> stop();
+      navigation -> stop();
       delay(500);
       int start = millis();
       int end;
@@ -160,7 +160,7 @@ void loop() {
               allTOFReadings();
               end = millis();
               reverseDrum();
-              // navigation -> reverse();
+              navigation -> reverse();
               isRemovingWeight = false;
             }
             isRemovingWeight = false;
