@@ -274,8 +274,8 @@ void nav_loop(bool weight_detected)
   uint16_t br = get_brTOF();
   uint16_t tl = get_tlTOF();
   uint16_t bl = get_blTOF();
-
-  check_stuck_condition();
+  Serial.print("Checking Conditions");
+  // check_stuck_condition();
   if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
     //Serial.print("Gotcha1");
     weightDetection(1);

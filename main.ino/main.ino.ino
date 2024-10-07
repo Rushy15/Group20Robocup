@@ -162,18 +162,20 @@ void printingIMUData()
 
                                               /* Callback functions for tasks */
 
-void updateColourDataCallback(int start_collecting)
+void updateColourDataCallback()
 {
   /* Getting colour of home base - One time loop at startup*/
-  // while(colourDataCollected == false) {
+  start_collecting = millis();
+  while(colourDataCollected == false) {
     Serial.println("Updating Colours");
     int end_collecting = millis();
     collectingColourData();
     printingColourData();
+    Serial.print(end_collecting - start_collecting);
     if ((end_collecting - start_collecting) > 3000) {
       colourDataCollected = true;
     }
-  // }
+  }
 }
 
 void generalNavCallback()
@@ -248,9 +250,9 @@ void wallFollowingCallback()
 Task updateTOFData(300, TASK_FOREVER, &allTOFReadings, &ts, false);
 Task updateUSData(1000, TASK_FOREVER, &allUSValues, &ts, false);
 Task updateIMUData(300, TASK_FOREVER, &imu_loop, &ts, false);
-Task updateColourData(3000, TASK_FOREVER, &updateColourDataCallback, &ts, true);
+Task updateColourData(3000, TASK_FOREVER, &updateColourDataCallback, &ts, false);
 
-Task generalNav(3000, TASK_FOREVER, &generalNavCallback, &ts, false);
+Task generalNav(1000, TASK_FOREVER, &generalNavCallback, &ts, false);
 Task wallFollowingNav(10000, TASK_FOREVER, &wallFollowingCallback, &ts, false);
 
 Task collectWeight(16000, TASK_FOREVER, &collectWeightCallback, &ts, false);
@@ -293,19 +295,18 @@ void FSMHandler()
         updateColourData.enable();
         // printingColourData();
       } else {
-        currentState = NAVIGATION;
         disableAllTasks();
+        currentState = NAVIGATION;
       }
       break;
     }
     case 1: { // NAVIGATION - Calls general navigation and checks for the condition where a weight has entered the channel
-      disableAllTasks();
       generalNav.enable();
-      Serial.println("Navigating");
+      Serial.println("ROBOCUP");
       if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !isRemovingWeight) {  /* Only check if not currently removing */
         isRemovingWeight = true;
-        
+        Serial.print("Condition Hit");
         go_straight();
         delay(500);
         stop();
@@ -316,10 +317,12 @@ void FSMHandler()
         break;
       } else {
         Serial.print("Enabling General Navigation");
-        generalNav.enable();
         currentState = NAVIGATION;
+        Serial.println("Navigating 1");
         break;
       }
+      Serial.println("Navigating 2");
+      break;
     }
     case 2: { // COLLECTION - Used to spin the drum and has error checking incase the weight is stuck
       int start = millis();
@@ -409,8 +412,8 @@ void setup() {
 
 void loop() {
   FSMHandler();
-
   ts.execute();
+
   Serial.print("Executing Task: ");
   Serial.println(currentState);
   // printingSensorValues();
