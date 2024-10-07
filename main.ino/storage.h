@@ -19,14 +19,13 @@ class Storage {
     static const uint8_t second_slot_discard = 36;        
     static const uint8_t first_slot_discard = 0 ;
 
-    
     int front_tof;
 
   public:
     static const int sensor = A7;
     Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
   
-    uint8_t psState; // Final Value used within the FSM
+    int psState; // Final Value used within the FSM
 
     unsigned long Timer1, currTimer;  
     unsigned long prevTimer = 0;
@@ -48,7 +47,8 @@ class Storage {
 
 int read_psState();
 void set_psState(int state);
-uint8_t get_psState();
+int get_psState();
+int get_weightsCollected();
 
 void storing(uint8_t proximityState);
 bool max_capacity();

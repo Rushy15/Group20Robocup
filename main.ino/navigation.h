@@ -38,6 +38,8 @@ int angleToTurn(int currentHeadingAngle, int angleToTurn);
 bool get_weight_detected_bool();
 void set_weight_detected_bool(bool state);
 
+void set_wall_detected_bool(bool state);
+
 void general_navigation();
 void weightDetection(bool direction);
 void nav_loop(bool weight_detected);

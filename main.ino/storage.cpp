@@ -235,7 +235,12 @@ void set_psState(int state)
   storage->psState = state;
 }
 
-uint8_t get_psState()
+int get_psState()
 {
   return storage->psState;
+}
+
+int get_weightsCollected()
+{
+  return storage->weights_collected;
 }

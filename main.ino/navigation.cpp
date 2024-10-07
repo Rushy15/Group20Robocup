@@ -33,11 +33,13 @@
 #define WallfollowingLimit 25
 #define weightDetectingDistance 130 // Difference between long range TOFs to turn the robot if a weight is detected
 #define maxStraightLineTravelTime 3000
-#define topLevel_longRangeTOFLimit 170
 #define weightDetectingDistanceMax 1200
+
+#define topLevel_longRangeTOFLimit 170
 #define topLevel_longRangeTOFWFLimit 200
+
 #define angleToTurnDuringWallFollowing 90
-#define angleToTurnDuringFindingWeight 340
+#define angleToTurnDuringFindingWeight 345
 
 unsigned long stuckStartTime = 0;
 unsigned long homeBaseStartTime = 0;
@@ -113,7 +115,7 @@ void walldetected() {
       allTOFReadings();
       turn_left();
     }
-    set_weight_detected_bool(true);
+    set_wall_detected_bool(true);
   }
 }
 
@@ -222,7 +224,7 @@ void wallFollowing()
   uint16_t trTOF = get_trTOF();
 
   /* Following wall on the right */
-  while (get_weight_detected_bool() == false) {
+  while (navigation->walldetected_bool == false) {
     walldetected();
     Serial.println("Stuck Here");
     allTOFReadings();
@@ -244,7 +246,6 @@ void wallFollowing()
         // int desired_angle = angleToTurn(current_angle, angleToTurnDuringWallFollowing);
         turn_left();
         imu_loop();
-        
       }
     }
     else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
@@ -275,16 +276,17 @@ void nav_loop(bool weight_detected)
   uint16_t tl = get_tlTOF();
   uint16_t bl = get_blTOF();
   Serial.print("Checking Conditions");
-  // check_stuck_condition();
   
   if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
     //Serial.print("Gotcha1");
     weightDetection(1);
     set_weight_detected_bool(true);
+    check_stuck_condition();
   } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
     //Serial.print("Gotcha2");
     weightDetection(0);
     set_weight_detected_bool(true);
+    check_stuck_condition();
   }
   else {
     if (weight_detected == false) {
@@ -338,7 +340,13 @@ void nav_loop(bool weight_detected)
       }
     }
     general_navigation();
+    check_stuck_condition();
   }
+}
+
+void set_wall_detected_bool(bool state)
+{ 
+  navigation->walldetected_bool = state;
 }
 
 void set_weight_detected_bool(bool state)

@@ -106,6 +106,21 @@ void printingIMUData()
   }
 }
 
+void disposingWeightsLoop()
+{
+  go_straight();
+  delay(1000);
+  int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+  int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
+  stop();
+  while (reachedDesiredHeadingAngle(desired_angle) == false) {
+    turn_left();
+    imu_loop();
+  } 
+  stop();
+  reset_capacity();
+}
+
 void setup() {
   // put your setup code here, to run once:
   if (sensor == nullptr) {
@@ -156,7 +171,7 @@ void loop()
     }
   }
   
-  /* State Machine for the robot */  
+  /* State Machine for the robot */
   nav_loop(navigation->weight_detcted_bool);
 
   
@@ -173,7 +188,9 @@ void loop()
       while (get_barrel() > 100) {
           allTOFReadings();
           spinDrum();
-          set_psState(read_psState());
+          int current_psState = read_psState();
+          set_psState(current_psState);
+          Serial.print(get_psState());
           end = millis();
           if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 14 seconds */
             while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
@@ -199,16 +216,17 @@ void loop()
       isRemovingWeight = false;  /* Reset flag once the barrel has returned */
   }
 
+  // if (inHomeBase() && (get_weightsCollected() >= 1)) {
+  //   disposingWeightsLoop();
+  // }
+
   // /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
     wallFollowing();
     updateColourValues();
     printingColourData();
     if (inHomeBase()) {
-      go_straight();
-      delay(1000);
-      int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
-      int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
+      disposingWeightsLoop();
       // int angle_to_turn = abs(current_angle - desired_angle);
 
       // Serial.print("Current Angle");
@@ -220,18 +238,11 @@ void loop()
       // Serial.print("Difference");
       // Serial.println(angle_to_turn);
 
-      stop();
-      while (reachedDesiredHeadingAngle(desired_angle) == false) {
-        turn_left();
-        imu_loop();
-        // current_angle = get_headingAngle(0);
-        // angle_to_turn = abs(current_angle - desired_angle);
-        
-        // Serial.print("Current Angle in Loop");
-        // Serial.println(current_angle);
-      } 
-      stop();
-      reset_capacity();
+      // current_angle = get_headingAngle(0);
+      // angle_to_turn = abs(current_angle - desired_angle);
+      
+      // Serial.print("Current Angle in Loop");
+      // Serial.println(current_angle);
     }
   }
 }
