@@ -30,12 +30,12 @@
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
 #define HOME_BASE_THRESHOLD 5000 // Time in milliseconds to stay at home base
 
-#define rUSLimit 20
+#define rUSLimit 15
 #define lUSLimit 15
 #define frontTOFLimit 300
 #define frontTOFWFLimit 350 // Wall following limit
-#define frontTOFMinimum 450
-#define frontTOFWFMinimum 500
+#define frontTOFMinimum 449
+#define frontTOFWFMinimum 450
 #define WallfollowingLimit 25
 #define weightDetectingDistance 130 // Difference between long range TOFs to turn the robot if a weight is detected
 #define maxStraightLineTravelTime 4000
@@ -44,8 +44,8 @@
 #define topLevel_longRangeTOFLimit 170
 #define topLevel_longRangeTOFWFLimit 300
 
-#define angleTurningTolerance 10
-#define angleToTurnDuringWallFollowing 90
+#define angleTurningTolerance 6
+#define angleToTurnDuringWallFollowing 75
 #define angleToTurnDuringFindingWeight 345
 
 unsigned long stuckStartTime = 0;
@@ -218,7 +218,6 @@ void weight_entered_entry() {
   }
 }
 
-
 void general_navigation()
 {
   int mTOF = get_mTOF();
@@ -296,52 +295,57 @@ void wallFollowingRight()
 
   /* Following wall on the right */
   while (navigation->walldetected_bool == false) {
-    weight_entered_entry();
     walldetected();
-    Serial.println("Stuck Here");
     allTOFReadings();
     allUSValues();
+    
     go_straight();
-    walldetected();
-    allTOFReadings();
     Serial.println("Stuck Here");
   }
   reverseDrum();
 
   if (navigation->walldetected_bool == true) {
-    if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit)) ||
-        (get_trTOF() < topLevel_longRangeTOFWFLimit)) {
+    if (get_trTOF() < topLevel_longRangeTOFWFLimit) { // ((mTOF < frontTOFWFMinimum) && (r_us <= rUSLimit))
       // stop();
       delay(500);
-      while ((mTOF < frontTOFWFMinimum)) {
-        Serial.println("Stuck Here 1");
-        allTOFReadings();
+      int desired_angle = angleToTurn(get_headingAngle(0), 10, 0);
+      while (reachedDesiredHeadingAngle(desired_angle) == false)  {
+        // Serial.print(get_headingAngle(0));
+        // Serial.print("\t");
+        // Serial.println("Stuck Here 1");
+        // allTOFReadings();
         //allUSValues();
-        mTOF = get_mTOF();
-        r_us = get_rUS();
+        // mTOF = get_mTOF();
+        // r_us = get_rUS();
 
-        turn_left();
+        // turn_left_slow();
+        roll_left();
         imu_loop();
       }
-      go_straight();
+    } else if (get_mTOF() < frontTOFWFMinimum) {
+      int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing, 0);
+      while (reachedDesiredHeadingAngle(desired_angle) == false)
+        roll_left();
+        imu_loop();
     }
-    else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit + 50)) {
-      int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing, 1);
-      stop();
-      delay(500);
-      while (reachedDesiredHeadingAngle(desired_angle) == false) {
-        // (r_us > WallfollowingLimit) && (trTOF > topLevel_longRangeTOFWFLimit) && (mTOF > frontTOFLimit)
-        Serial.println("Stuck Here 2");
-        allTOFReadings();
+    // go_straight();
+    // else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit + 30)) {
+    //   int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing, 1);
+    //   // stop();
+    //   delay(500);
+    //   while (reachedDesiredHeadingAngle(desired_angle) == false) {
+    //     Serial.println("Stuck Here 2");
+    //     allTOFReadings();
 
-        mTOF = get_mTOF();
-        r_us = get_rUS();
-        trTOF = get_trTOF();
-        turn_right_slow();
-        imu_loop();
-      }
-      go_straight();
-    } else {
+    //     mTOF = get_mTOF();
+    //     r_us = get_rUS();
+    //     trTOF = get_trTOF();
+    //     turn_right_slow();
+    //     imu_loop();
+    //   }
+    //   go_straight();
+    // } 
+    else {
       go_straight();
     }
   }
