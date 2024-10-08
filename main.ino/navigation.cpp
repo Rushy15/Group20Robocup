@@ -30,7 +30,7 @@
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
 #define HOME_BASE_THRESHOLD 5000 // Time in milliseconds to stay at home base
 
-#define rUSLimit 15
+#define rUSLimit 20
 #define lUSLimit 15
 #define frontTOFLimit 300
 #define frontTOFWFLimit 350 // Wall following limit
@@ -42,7 +42,7 @@
 #define weightDetectingDistanceMax 1200
 
 #define topLevel_longRangeTOFLimit 170
-#define topLevel_longRangeTOFWFLimit 200
+#define topLevel_longRangeTOFWFLimit 300
 
 #define angleToTurnDuringWallFollowing 90
 #define angleToTurnDuringFindingWeight 345
@@ -281,8 +281,8 @@ void wallFollowing()
 
   if (navigation->walldetected_bool == true) {
     if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit)) ||
-        (get_trTOF() < topLevel_longRangeTOFWFLimit - 50)) {
-      stop();
+        (get_trTOF() < topLevel_longRangeTOFWFLimit)) {
+      // stop();
       delay(500);
       while ((mTOF < frontTOFWFMinimum)) {
         Serial.println("Stuck Here 1");
