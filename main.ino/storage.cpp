@@ -3,14 +3,14 @@
 // #include "navigation.h"
 
 /* RGB for Blue Base */
-#define R_BLUEBASE 0
-#define B_BLUEBASE 0
-#define G_BLUEBASE 0
+#define R_BLUEBASE 57
+#define B_BLUEBASE 48
+#define G_BLUEBASE 60
 
 /* RGB for Green Base */
-#define R_GREENBASE 0
-#define G_GREENBASE 0
-#define B_GREENBASE 0
+#define R_GREENBASE 56
+#define G_GREENBASE 45
+#define B_GREENBASE 25
 
 Storage *storage = nullptr;
 
