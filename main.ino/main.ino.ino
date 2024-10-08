@@ -219,59 +219,59 @@ void loop() {
   // printingSensorValues();
   // printingIMUData();
 
-  // /* Getting colour of home base - One time loop at startup */
-  // int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
-  // while (colourDataCollected == false) {
-  //   int end_collecting = millis();
-  //   collectingColourData();
-  //   printingColourData();
-  //   if ((end_collecting - start_collecting) > 3000) {
-  //     colourDataCollected = true;
-  //     assignEnemyBaseRGB();
-  //   }
-  // }
+  /* Getting colour of home base - One time loop at startup */
+  int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
+  while (colourDataCollected == false) {
+    int end_collecting = millis();
+    collectingColourData();
+    printingColourData();
+    if ((end_collecting - start_collecting) > 3000) {
+      colourDataCollected = true;
+      assignEnemyBaseRGB();
+    }
+  }
 
-  // /* State Machine for the robot */
-  // nav_loop(navigation->weight_detcted_bool);
+  /* State Machine for the robot */
+  nav_loop(navigation->weight_detcted_bool);
 
-  // /* Checking to see if a weight has entered the channel of the robot */
-  // weight_entered_entry();
+  /* Checking to see if a weight has entered the channel of the robot */
+  weight_entered_entry();
 
-  // /* Checking to see if the weight has entered the barrel */
-  // if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
-  //   stop();
-  //   stopDrum();
-  //   storing(get_psState());
-  //   set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
-  // }
+  /* Checking to see if the weight has entered the barrel */
+  if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
+    stop();
+    stopDrum();
+    storing(get_psState());
+    set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
+  }
 
-  // if (inHomeBase()) {
-  //   if (get_weightsCollected() == 0) {
-  //     getOutOfHomeBase;
-  //   } else if (get_weightsCollected() >= 1) {
-  //     disposingWeightsLoop(homeBaseColour());  // Returns 0 if homebase is green base, returns 1 if blue base
-  //   }
-  // }
+  if (inHomeBase()) {
+    if (get_weightsCollected() == 0) {
+      getOutOfHomeBase;
+    } else if (get_weightsCollected() >= 1) {
+      disposingWeightsLoop(homeBaseColour());  // Returns 0 if homebase is green base, returns 1 if blue base
+    }
+  }
 
-  // if (inEnemyBase()) {
-  //   getOutOfEnemyBase();
-  // }
+  if (inEnemyBase()) {
+    getOutOfEnemyBase();
+  }
 
-  // // /* Checking to see if the robot has collected three weights and is at full capacicty*/
-  // while (max_capacity()) {
-  //   imu_loop();
-  //   wallFollowingRight();
-  //   updateColourValues();
-  //   // printingColourData();
-  //   if (inHomeBase()) {
-  //     stopDrum();
-  //     disposingWeightsLoop(0);
-  //     imu_loop();
-  //   }
-  // }
+  // /* Checking to see if the robot has collected three weights and is at full capacicty*/
+  while (max_capacity()) {
+    imu_loop();
+    wallFollowingRight();
+    updateColourValues();
+    // printingColourData();
+    if (inHomeBase()) {
+      stopDrum();
+      disposingWeightsLoop(0);
+      imu_loop();
+    }
+  }
 
   // updateColourValues();
   // printingColourData();
-  printingSensorValues();
-  wallFollowingRight();
+  // printingSensorValues();
+  // wallFollowingRight();
 }

@@ -355,14 +355,17 @@ void wallFollowingRight()
       Serial.println("Going straight during Wall Following (1)");
     } 
     else {
-        if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))) {
+        allTOFReadings();
+        if ((mTOF < frontTOFLimit) || ((mTOF < frontTOFLimit) && (r_us <= rUSLimit))) {
           int desired_angle = angleToTurn_WF(get_headingAngle(0), angleToTurn, 0);
-            while (reachedDesiredHeadingAngle(desired_angle) == false) {
+            while ((reachedDesiredHeadingAngle(desired_angle) == false) && (get_mTOF() < frontTOFMinimum)) {
               if (perpendicularToWall(get_headingAngle(0))) {
                 break;
               }
-              turn_left_slow();
+              turn_left();
               imu_loop();
+              allTOFReadings();
+
               Serial.print("Desired Heading Angle: ");
               Serial.print("\t");
               Serial.print(desired_angle);
@@ -375,30 +378,32 @@ void wallFollowingRight()
             }
             stop();
             delay(500);
-            imu_loop();
-        } else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) || (trTOF > topLevel_longRangeTOFLimit)) {
+            // imu_loop();
+        } else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
           // go_straight();
           // delay(1000);
           int desired_angle = angleToTurn_WF(get_headingAngle(0), angleToTurn, 1);
           while (reachedDesiredHeadingAngle(desired_angle) == false) {
-            if (perpendicularToWall(get_headingAngle(0))) {
-                break;
-              }
-            turn_right_slow();
+            // if (perpendicularToWall(get_headingAngle(0))) {
+            //     break;
+            //   }
+            turn_right();
             imu_loop();
+            allTOFReadings();
+
             Serial.print("Desired Heading Angle: ");
-              Serial.print("\t");
-              Serial.print(desired_angle);
-              Serial.print("\t");
-              Serial.print("Current Heading Angle: ");
-              Serial.print("\t");
-              Serial.print(get_headingAngle(0));
-              Serial.print("\t");
+            Serial.print("\t");
+            Serial.print(desired_angle);
+            Serial.print("\t");
+            Serial.print("Current Heading Angle: ");
+            Serial.print("\t");
+            Serial.print(get_headingAngle(0));
+            Serial.print("\t");
             Serial.println("Turning right during Wall Following");
           }
           stop();
           delay(500);
-          imu_loop();
+          // imu_loop();
         } else {
           go_straight();
           // Serial.print("Desired Heading Angle: ");
