@@ -34,7 +34,7 @@ int start_collecting;
 #define MAX_COLLECTING_TIME 14000
 #define REVERSE_SYSTEM_TIME 16000
 
-#define ANGLE_TO_TURN_DURING_UNLOADING 90 // Can assign a max value of 180 
+#define ANGLE_TO_TURN_DURING_UNLOADING 135 // Can assign a max value of 180 
 
 
                                               /* Printing functions for Serial */
@@ -110,13 +110,14 @@ void printingIMUData()
   }
 }
 
-void disposingWeightsLoop()
+void disposingWeightsLoop(int direction)
 {
+  int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+  int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING, direction); 
   go_straight();
   delay(500);
-  int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
-  int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
   stop();
+  delay(500);
   // while (reachedDesiredHeadingAngle(desired_angle) == false) {
   //   turn_left();
   //   imu_loop();
@@ -129,11 +130,12 @@ void disposingWeightsLoop()
   while (reachedDesiredHeadingAngle(desired_angle) == false){
     // allTOFReadings();
     // mTOF = get_mTOF();
-    turn_left();
+    turn_left_slow();
     imu_loop();
     // } 
   }
   stop();
+  delay(500);
   reset_capacity();
 }
 
@@ -171,6 +173,7 @@ void setup() {
 void loop() 
 {
   allTOFReadings();
+  updateColourValues();
   imu_loop();
 
   //printingSensorValues();
@@ -201,9 +204,9 @@ void loop()
       set_isRemovingWeight_bool(false);  /* Reset flag once the barrel has returned */
   }
 
-  // if (inHomeBase() && (get_weightsCollected() >= 1)) {
-  //   disposingWeightsLoop();
-  // }
+  if (inHomeBase() && (get_weightsCollected() >= 1)) {
+    disposingWeightsLoop(0);
+  }
 
   // /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
@@ -213,7 +216,7 @@ void loop()
     printingColourData();
     if (inHomeBase()) {
       stopDrum();
-      disposingWeightsLoop();
+      disposingWeightsLoop(0);
       imu_loop();
     }
   }

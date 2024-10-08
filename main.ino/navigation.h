@@ -26,14 +26,16 @@ void stop();
 void reverse();
 void turn_left();
 void roll_left();
+void turn_left_slow();
 void turn_right();
+void turn_right_slow();
 void roll_right();
 
 void walldetected();
 void wallFollowing();
 
 bool reachedDesiredHeadingAngle(int desiredAngle);
-int angleToTurn(int currentHeadingAngle, int angleToTurn);
+int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionToTurn);
 
 bool get_weight_detected_bool();
 void set_weight_detected_bool(bool state);
