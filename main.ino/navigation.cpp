@@ -11,10 +11,10 @@
 #define BWR 1100  
 #define BWL 1900
 
-#define FWR_SLOW 1800
-#define FWL_SLOW 1200
-#define BWR_SLOW 1200  
-#define BWL_SLOW 1800
+#define FWR_SLOW 1750
+#define FWL_SLOW 1250
+#define BWR_SLOW 1250  
+#define BWL_SLOW 1750
 
 #define FWR_FULL 1950
 #define FWL_FULL 1050
@@ -355,8 +355,8 @@ void wallFollowingRight()
       Serial.println("Going straight during Wall Following (1)");
     } 
     else {
-      int desired_angle = angleToTurn_WF(get_headingAngle(0), angleToTurn, 0);
         if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))) {
+          int desired_angle = angleToTurn_WF(get_headingAngle(0), angleToTurn, 0);
             while (reachedDesiredHeadingAngle(desired_angle) == false) {
               if (perpendicularToWall(get_headingAngle(0))) {
                 break;
@@ -373,11 +373,13 @@ void wallFollowingRight()
               Serial.print("\t");
               Serial.println("Turning left during Wall Following");
             }
-            // stop();
-            // delay(500);
+            stop();
+            delay(500);
+            imu_loop();
         } else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) || (trTOF > topLevel_longRangeTOFLimit)) {
           // go_straight();
           // delay(1000);
+          int desired_angle = angleToTurn_WF(get_headingAngle(0), angleToTurn, 1);
           while (reachedDesiredHeadingAngle(desired_angle) == false) {
             if (perpendicularToWall(get_headingAngle(0))) {
                 break;
@@ -394,18 +396,19 @@ void wallFollowingRight()
               Serial.print("\t");
             Serial.println("Turning right during Wall Following");
           }
-          // stop();
-          // delay(500);
+          stop();
+          delay(500);
+          imu_loop();
         } else {
           go_straight();
-          Serial.print("Desired Heading Angle: ");
-          Serial.print("\t");
-          Serial.print(desired_angle);
-          Serial.print("\t");
-          Serial.print("Current Heading Angle: ");
-          Serial.print("\t");
-          Serial.print(get_headingAngle(0));
-          Serial.print("\t");
+          // Serial.print("Desired Heading Angle: ");
+          // Serial.print("\t");
+          // Serial.print(desired_angle);
+          // Serial.print("\t");
+          // Serial.print("Current Heading Angle: ");
+          // Serial.print("\t");
+          // Serial.print(get_headingAngle(0));
+          // Serial.print("\t");
           Serial.println("Going straight during Wall Following (2)");
         }
     }
