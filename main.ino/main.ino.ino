@@ -159,67 +159,76 @@ void setup() {
 
 void loop() 
 {
-  allTOFReadings();
-  updateColourValues();
-  imu_loop();
+  // allTOFReadings();
+  // updateColourValues();
+  // imu_loop();
 
-  //printingSensorValues();
-  printingIMUData();
+  // //printingSensorValues();
+  // printingIMUData();
 
-  /* Getting colour of home base - One time loop at startup */
-  int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
-  while(colourDataCollected == false) {
-    int end_collecting = millis();
-    collectingColourData();
-    printingColourData();
-    if ((end_collecting - start_collecting) > 3000) {
-      colourDataCollected = true;
-      assignEnemyBaseRGB();
-    }
-  }
+  // /* Getting colour of home base - One time loop at startup */
+  // int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
+  // while(colourDataCollected == false) {
+  //   int end_collecting = millis();
+  //   collectingColourData();
+  //   printingColourData();
+  //   if ((end_collecting - start_collecting) > 3000) {
+  //     colourDataCollected = true;
+  //     assignEnemyBaseRGB();
+  //   }
+  // }
   
-  /* State Machine for the robot */  
-  nav_loop(navigation->weight_detcted_bool);
+  // /* State Machine for the robot */  
+  // nav_loop(navigation->weight_detcted_bool);
 
-  /* Checking to see if a weight has entered the channel of the robot */
-  weight_entered_entry();
+  // /* Checking to see if a weight has entered the channel of the robot */
+  // weight_entered_entry();
 
-  /* Checking to see if the weight has entered the barrel */
-  if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
-      stop();
-      stopDrum();
-      storing(get_psState());
-      set_isRemovingWeight_bool(false);  /* Reset flag once the barrel has returned */
-  }
+  // /* Checking to see if the weight has entered the barrel */
+  // if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
+  //     stop();
+  //     stopDrum();
+  //     storing(get_psState());
+  //     set_isRemovingWeight_bool(false);  /* Reset flag once the barrel has returned */
+  // }
 
-  if (inHomeBase() && (get_weightsCollected() >= 1)) {
-    disposingWeightsLoop(0);
-  }
+  // if (inHomeBase() && (get_weightsCollected() >= 1)) {
+  //   disposingWeightsLoop(0);
+  // }
 
-  if (inEnemyBase()) {
-    int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
-    int direction = 1 ? (homeBaseColour() == 0) : 0; // Returns 0 if homebase is 
-    int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_IF_IN_ENEMYBASE, direction) ? ();
-    while (reachedDesiredHeadingAngle(desired_angle) == false) {
-      if (direction == 0) {
-        turn_left();
-      } else {
-        turn_right();
-      }
-    reverseDrum();
-    }
-  }
+  // if (inEnemyBase()) {
+  //   int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+  //   int direction = 1 ? (homeBaseColour() == 0) : 0; // Returns 0 if homebase is 
+  //   int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_IF_IN_ENEMYBASE, direction);
+  //   while (reachedDesiredHeadingAngle(desired_angle) == false) {
+  //     if (direction == 0) {
+  //       turn_left();
+  //     } else {
+  //       turn_right();
+  //     }
+  //   reverseDrum();
+  //   }
+  // }
 
-  // /* Checking to see if the robot has collected three weights and is at full capacicty*/
-  while (max_capacity()) {
-    imu_loop();
-    wallFollowingRight();
-    updateColourValues();
-    // printingColourData();
-    if (inHomeBase()) {
-      stopDrum();
-      disposingWeightsLoop(0);
-      imu_loop();
-    }
-  }
+  // // /* Checking to see if the robot has collected three weights and is at full capacicty*/
+  // while (max_capacity()) {
+  //   imu_loop();
+  //   wallFollowingRight();
+  //   updateColourValues();
+  //   // printingColourData();
+  //   if (inHomeBase()) {
+  //     stopDrum();
+  //     disposingWeightsLoop(0);
+  //     imu_loop();
+  //   }
+  // }
+  Serial.print("R: ");
+  Serial.print(getR());
+  Serial.print("\t");
+  Serial.print("G: "); 
+  Serial.print(getG());
+  Serial.print("\t");
+  Serial.print("B: "); 
+  Serial.println(getB());
+  updateColourValues();
 }
