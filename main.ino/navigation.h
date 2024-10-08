@@ -6,37 +6,50 @@
 
 class Navigation {
   protected:
-    Servo Rservo;
-    Servo Lservo;
     
   public:
+    Servo Rservo;
+    Servo Lservo;
+    bool isRemovingWeight = false;
     bool walldetected_bool = false;
     bool robotstuck_bool = false;
     bool weight_detcted_bool = false;
 
     int start_weight_detection;
 
-    void go_straight();
-    void turn_left();
-    void turn_right();
-    void reverse();
-    void stop();
-    void roll_right();
-    void roll_left();
-
-    void general_navigation();
-    void weightDetection(bool direction);
     void navigation_setup();
 };
 
-// bool endOfWall = false;
 
-int angleToTurn(int currentHeadingAngle, int angleToTurn);
-void nav_loop(bool weight_detected);
-void wallFollowing();
+void go_straight();
+void stop();
+void reverse();
+void turn_left();
+void roll_left();
+void turn_left_slow();
+void turn_right();
+void turn_right_slow();
+void roll_right();
+
 void walldetected();
+void wallFollowing();
+
 bool reachedDesiredHeadingAngle(int desiredAngle);
+int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionToTurn);
 
-extern Navigation *navigation;
+bool get_weight_detected_bool();
+void set_weight_detected_bool(bool state);
 
+void set_wall_detected_bool(bool state);
+
+bool get_isRemovingWeight_bool();
+void set_isRemovingWeight_bool(bool state);
+
+void weight_entered_entry();
+
+void general_navigation();
+void weightDetection(bool direction);
+void nav_loop(bool weight_detected);
+
+extern Navigation *navigation; 
 #endif // NAVIGATION_H

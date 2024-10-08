@@ -20,61 +20,6 @@ void Storage::colour_sensor_setup()
   }
 }
 
-void updateColourValues()
-{
-  storage->tcs.setInterrupt(false);      // turn on LED
-  delay(60);  // takes 50ms to read 
-  storage->tcs.getRawData(&(storage->red), &(storage->green), &(storage->blue), &(storage->clear));
-  storage->tcs.setInterrupt(true);  // turn off LED
-}
-
-uint16_t getR()
-{
-  // Serial.print("\tR:\t"); Serial.print(storage->r);
-  return storage->red;
-} 
-
-uint16_t getG()
-{
-  // Serial.print("\tG:\t"); Serial.print(storage->g);
-  return storage->green;
-} 
-
-uint16_t getB()
-{
-  // Serial.println("\tB:\t"); Serial.print(storage->b);
-  return storage->blue;
-}
-
-void collectingColourData()
-{
-  updateColourValues();
-
-  storage->red_homebase = storage->red;
-  storage->blue_homebase = storage->blue;
-  storage->green_homebase = storage->green;
-}
-
-bool inHomeBase()
-{
-  // Measured colour values
-  uint16_t r = storage->red;
-  uint16_t b = storage->blue;
-  uint16_t g = storage->green;
-  // Desired colour values of Homebase
-  uint16_t rh = storage->red_homebase;
-  uint16_t bh = storage->blue_homebase;
-  uint16_t gh = storage->green_homebase;
-
-  if (((r >= (rh - 10)) && (r <= (rh + 10))) &&
-     ((b >= (bh - 10)) && (b <= (bh + 10))) &&
-     ((g >= (gh - 10)) && (g <= (gh + 10)))) {
-      return true;
-     } else {
-      return false;
-     }
-}
-
 void Storage::storage_setup() {
   colour_sensor_setup();
   myservo.attach(30);  // attaches the servo on pin 9 to the servo object
@@ -113,18 +58,6 @@ void Storage::discard_all_weights() {
   delay(1000); 
   rotateDrum(first_slot_discard,first_slot);                             
   delay(1000); 
-}
-
-int read_psState()
-{
-  uint8_t state = digitalRead(storage->sensor); // Gets the state that the proximity sensor senses
-  if ((state == LOW)) {
-    state = 0;
-  }
-  else {
-    state = 1;
-  }
-  return state;
 }
 
 void Storage::storeWeights()
@@ -196,6 +129,43 @@ void Storage::removeWeights(int Timer1)
     }
 }
 
+void collectingColourData()
+{
+  updateColourValues();
+
+  storage->red_homebase = storage->red;
+  storage->blue_homebase = storage->blue;
+  storage->green_homebase = storage->green;
+}
+
+void updateColourValues()
+{
+  storage->tcs.setInterrupt(false);      // turn on LED
+  delay(60);  // takes 50ms to read 
+  storage->tcs.getRawData(&(storage->red), &(storage->green), &(storage->blue), &(storage->clear));
+  storage->tcs.setInterrupt(true);  // turn off LED
+}
+
+bool inHomeBase()
+{
+  // Measured colour values
+  uint16_t r = storage->red;
+  uint16_t b = storage->blue;
+  uint16_t g = storage->green;
+  // Desired colour values of Homebase
+  uint16_t rh = storage->red_homebase;
+  uint16_t bh = storage->blue_homebase;
+  uint16_t gh = storage->green_homebase;
+
+  if (((r >= (rh - 10)) && (r <= (rh + 10))) &&
+     ((b >= (bh - 10)) && (b <= (bh + 10))) &&
+     ((g >= (gh - 10)) && (g <= (gh + 10)))) {
+      return true;
+     } else {
+      return false;
+     }
+}
+
 bool max_capacity()
 {
   if (storage->weights_collected == 3) {
@@ -209,7 +179,7 @@ void reset_capacity()
 {
   storage->discard_all_weights();
   storage->weights_collected = 0;
-  navigation->walldetected_bool = false;
+  set_weight_detected_bool(false);
 }
 
 void storing(uint8_t proximityState)
@@ -230,5 +200,47 @@ void storing(uint8_t proximityState)
   }
 }
 
+uint16_t getR()
+{
+  // Serial.print("\tR:\t"); Serial.print(storage->r);
+  return storage->red;
+} 
 
+uint16_t getG()
+{
+  // Serial.print("\tG:\t"); Serial.print(storage->g);
+  return storage->green;
+} 
 
+uint16_t getB()
+{
+  // Serial.println("\tB:\t"); Serial.print(storage->b);
+  return storage->blue;
+}
+
+int read_psState()
+{
+  uint8_t state = digitalRead(storage->sensor); // Gets the state that the proximity sensor senses
+  if ((state == LOW)) {
+    state = 0;
+  }
+  else {
+    state = 1;
+  }
+  return state;
+}
+
+void set_psState(int state)
+{
+  storage->psState = state;
+}
+
+int get_psState()
+{
+  return storage->psState;
+}
+
+int get_weightsCollected()
+{
+  return storage->weights_collected;
+}

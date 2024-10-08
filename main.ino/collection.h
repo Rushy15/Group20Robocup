@@ -8,7 +8,6 @@ class Collection {
   public:
     Servo drum;
     void collection_setup();
-    void loop();
 };
 
 void reverseDrum();

@@ -9,6 +9,7 @@
 #define HIGH_SPEED
 //#define HIGH_ACCURACY
 Sensors *sensor = nullptr;
+
 movingAvg lUS_Avg(SAMPLE_SIZE), rUS_Avg(SAMPLE_SIZE); // For Ultrasound 
 movingAvg mTOF_Avg(SAMPLE_SIZE), entry_Avg(SAMPLE_SIZE), barrel_Avg(SAMPLE_SIZE),entry2_Avg(SAMPLE_SIZE); // For VL53L0X
 movingAvg trTOF_Avg(SAMPLE_SIZE), tlTOF_Avg(SAMPLE_SIZE), brTOF_Avg(SAMPLE_SIZE), blTOF_Avg(SAMPLE_SIZE); // For VL53L1X
@@ -47,20 +48,30 @@ void Sensors::srTOF_Setup()
       Serial.println(i);
       while (1);
     }
-      #if defined LONG_RANGE
+
+    if ((i == 1)||(i == 3)) {
+      sensorsL0[i].setSignalRateLimit(0.1);
+      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+    }
+
+    #if defined LONG_RANGE
     // lower the return signal rate limit (default is 0.25 MCPS)
     sensorsL0[i].setSignalRateLimit(0.1);
     // increase laser pulse periods (defaults are 14 and 10 PCLKs)
     sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
     sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
     #endif
+
     #if defined HIGH_SPEED
     // reduce timing budget to 20 ms (default is about 33 ms)
     sensorsL0[i].setMeasurementTimingBudget(20000);
+
     #elif defined HIGH_ACCURACY
     // increase timing budget to 200 ms
     sensorsL0[i].setMeasurementTimingBudget(200000);
     #endif
+
     // Each sensor must have its address changed to a unique value other than
     // the default of 0x29 (except for the last one, which could be left at
     // the default). To make it simple, we'll just count up from 0x2A.
@@ -219,7 +230,7 @@ void allUSValues()
   sensor->us_Values();
 }
 
-// Function for reading and writing from ultrasonic sensors 
+/* Function for reading and writing from ultrasonic sensors */
 float Sensors::ping(int32_t trigPin, int32_t echoPin) {
   digitalWrite(trigPin, LOW);
   int start = micros();
@@ -231,6 +242,20 @@ float Sensors::ping(int32_t trigPin, int32_t echoPin) {
   duration = pulseIn(echoPin, HIGH);
   distance = (duration * .0343) / 2;
   return distance;
+}
+
+/* Final Setup Function for Sensors */
+void Sensors::sensor_setup()
+{
+  // Start of Init
+  Serial.begin(115200);
+  io.begin(SX1509_ADDRESS);
+  Wire.begin();
+  Wire.setClock(400000);
+  
+  srTOF_Setup();
+  lrTOF_Setup();
+  usSetup();
 }
 
 /* Functions for getting sensor values */
@@ -282,18 +307,4 @@ int get_blTOF()
 int get_tlTOF()
 {
   return *(sensor->tlTOF);
-}
-
-/* Final Setup Function for Sensors */
-void Sensors::sensor_setup()
-{
-  // Start of Init
-  Serial.begin(115200);
-  io.begin(SX1509_ADDRESS);
-  Wire.begin();
-  Wire.setClock(400000);
-  
-  srTOF_Setup();
-  lrTOF_Setup();
-  usSetup();
 }
