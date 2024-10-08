@@ -59,7 +59,7 @@ void Navigation::navigation_setup()
 {
   // Motor Setup
   Rservo.attach(28);
-  Lservo.attach(8);
+  Lservo.attach(7);
 }
 
 void stop()
@@ -69,8 +69,8 @@ void stop()
 }
 
 void turn_left() {
-    navigation->Rservo.writeMicroseconds(FWR);  
-    navigation->Lservo.writeMicroseconds(BWL);
+    navigation->Rservo.writeMicroseconds(FWR_FULL);  
+    navigation->Lservo.writeMicroseconds(BWL_FULL);
 }
 
 void turn_left_slow() {
@@ -79,8 +79,8 @@ void turn_left_slow() {
 }
 
 void turn_right() {
-    navigation->Rservo.writeMicroseconds(BWR);  
-    navigation->Lservo.writeMicroseconds(FWL); 
+    navigation->Rservo.writeMicroseconds(BWR_FULL);  
+    navigation->Lservo.writeMicroseconds(FWL_FULL); 
 }
 
 void turn_right_slow() {

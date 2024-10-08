@@ -245,17 +245,17 @@ void loop() {
     set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
   }
 
-  if (inHomeBase()) {
-    if (get_weightsCollected() == 0) {
-      getOutOfHomeBase;
-    } else if (get_weightsCollected() >= 1) {
-      disposingWeightsLoop(homeBaseColour());  // Returns 0 if homebase is green base, returns 1 if blue base
-    }
-  }
+  // if (inHomeBase()) {
+  //   if (get_weightsCollected() == 0) {
+  //     getOutOfHomeBase();
+  //   } else if (get_weightsCollected() >= 1) {
+  //     disposingWeightsLoop(homeBaseColour());  // Returns 0 if homebase is green base, returns 1 if blue base
+  //   }
+  // }
 
-  if (inEnemyBase()) {
-    getOutOfEnemyBase();
-  }
+  // if (inEnemyBase()) {
+  //   getOutOfEnemyBase();
+  // }
 
   // /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
@@ -270,8 +270,12 @@ void loop() {
     }
   }
 
-  // updateColourValues();
-  // printingColourData();
+  updateColourValues();
+  printingColourData();
+
   // printingSensorValues();
+  // Serial.println("Printed Sensor Values");
   // wallFollowingRight();
+  // Serial.println("Exited Wall Following");
+  // go_straight();
 }
