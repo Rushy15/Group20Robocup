@@ -125,16 +125,15 @@ void disposingWeightsLoop()
   int tr_tof = get_trTOF();
   int tl_tof = get_tlTOF();
 
-  if (mTOF < frontTOFLimit){ //units in mm
-      while (mTOF < frontTOFMinimum){
-        allTOFReadings();
-        mTOF = get_mTOF();
-        turn_left();
-      }
-    
-  stop();
-  reset_capacity();
-}
+  if (mTOF < frontTOFLimit){ //units in mm // mTOF < frontTOFMinimum
+    while (reachedDesiredHeadingAngle(desired_angle) == false){
+      allTOFReadings();
+      mTOF = get_mTOF();
+      turn_left();
+    } 
+    stop();
+    reset_capacity();
+  }
 }
 
 void setup() {
