@@ -20,7 +20,7 @@
 #define BWR_FULL 1050
 #define BWL_FULL 1950
 
-#define STUCK_THRESHOLD 3000 // Time in milliseconds to consider stuck
+#define STUCK_THRESHOLD 2500 // Time in milliseconds to consider stuck
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
 #define HOME_BASE_THRESHOLD 5000 // Time in milliseconds to stay at home base
 
@@ -28,11 +28,11 @@
 #define lUSLimit 15
 #define frontTOFLimit 300
 #define frontTOFWFLimit 350 // Wall following limit
-#define frontTOFMinimum 500
+#define frontTOFMinimum 450
 #define frontTOFWFMinimum 500
 #define WallfollowingLimit 25
 #define weightDetectingDistance 130 // Difference between long range TOFs to turn the robot if a weight is detected
-#define maxStraightLineTravelTime 3000
+#define maxStraightLineTravelTime 4000
 #define weightDetectingDistanceMax 1200
 
 #define topLevel_longRangeTOFLimit 170
@@ -77,8 +77,8 @@ void go_straight() {
 }
 
 void reverse() {
-  navigation->Rservo.writeMicroseconds(BWR_SLOW);  
-  navigation->Lservo.writeMicroseconds(BWL_SLOW);  
+  navigation->Rservo.writeMicroseconds(BWR);  
+  navigation->Lservo.writeMicroseconds(BWL);  
 }
 
 void roll_right()
@@ -160,6 +160,7 @@ void general_navigation()
   int tl_tof = get_tlTOF();
 
   if (mTOF < frontTOFLimit){ //units in mm
+    navigation->start_weight_detection = millis();
     if (tr_tof < tl_tof){
       while (mTOF < frontTOFMinimum){
         allTOFReadings();
@@ -176,9 +177,11 @@ void general_navigation()
     }
   } 
   else if (get_trTOF() < topLevel_longRangeTOFLimit) {///units in cm
+    navigation->start_weight_detection = millis();
     turn_left();
   } 
   else if (get_tlTOF() < topLevel_longRangeTOFLimit) {///units in cm
+    navigation->start_weight_detection = millis();
     turn_right();
   }
   else {
@@ -300,18 +303,6 @@ void nav_loop(bool weight_detected)
       // Serial.println(end_weight_detection - navigation->start_weight_detection);
       if (end_weight_detection - navigation->start_weight_detection >  maxStraightLineTravelTime) {
         int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringFindingWeight);
-        
-        // Serial.print("Finding Desired Angle:");
-        // Serial.print("\t");
-        // Serial.print(desired_angle);
-        // Serial.print("\t");
-        // Serial.print("Current Angle:");
-        // Serial.print("\t");
-        // Serial.print(get_headingAngle(0));
-        // Serial.print("\t");
-        // Serial.print("Has it performed a turn?: ");
-        // Serial.print("\t");
-        // Serial.println(reachedDesiredHeadingAngle(desired_angle));
 
         while (reachedDesiredHeadingAngle(desired_angle) == false) {
           if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
