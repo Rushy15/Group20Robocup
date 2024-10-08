@@ -135,6 +135,7 @@ void disposingWeightsLoop()
   stop();
   reset_capacity();
 }
+}
 
 void setup() {
   // put your setup code here, to run once:

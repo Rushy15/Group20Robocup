@@ -2,6 +2,7 @@
 #include "sensors.h"
 #include "storage.h"
 #include "imu.h"
+#include "collection.h"
 
 #define N 1500 // Neutral Speed
 
@@ -19,6 +20,11 @@
 #define FWL_FULL 1050
 #define BWR_FULL 1050
 #define BWL_FULL 1950
+
+#define ENTRY_MIN 50
+#define ENTRY_MAX 150
+#define ENTRY2_MIN 30
+#define ENTRY2_MAX 100
 
 #define STUCK_THRESHOLD 2500 // Time in milliseconds to consider stuck
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
@@ -275,9 +281,10 @@ void wallFollowing()
 
   if (navigation->walldetected_bool == true) {
     if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit)) ||
-        (get_trTOF() < topLevel_longRangeTOFWFLimit)) {
-      int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing);
-      while (reachedDesiredHeadingAngle(desired_angle) == false) {
+        (get_trTOF() < topLevel_longRangeTOFWFLimit - 20)) {
+      stop();
+      delay(500);
+      while ((mTOF < frontTOFWFMinimum)) {
         Serial.println("Stuck Here 1");
         allTOFReadings();
         //allUSValues();
@@ -288,8 +295,9 @@ void wallFollowing()
         turn_left();
         imu_loop();
       }
+      go_straight();
     }
-    else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
+    else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit + 30)) {
       int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing);
       while (reachedDesiredHeadingAngle(desired_angle) == false) {
         // (r_us > WallfollowingLimit) && (trTOF > topLevel_longRangeTOFWFLimit) && (mTOF > frontTOFLimit)
@@ -304,6 +312,7 @@ void wallFollowing()
         turn_right();
         imu_loop();
       }
+      go_straight();
     } else {
       go_straight();
     }

@@ -41,7 +41,9 @@ void set_weight_detected_bool(bool state);
 void set_wall_detected_bool(bool state);
 
 bool get_isRemovingWeight_bool();
-bool set_isRemovingWeight_bool(bool state);
+void set_isRemovingWeight_bool(bool state);
+
+void weight_entered_entry();
 
 void general_navigation();
 void weightDetection(bool direction);
