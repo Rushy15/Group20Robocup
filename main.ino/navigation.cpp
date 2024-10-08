@@ -6,15 +6,15 @@
 
 #define N 1500 // Neutral Speed
 
-#define FWR 1850
-#define FWL 1150
-#define BWR 1150  
-#define BWL 1850
+#define FWR 1900
+#define FWL 1100
+#define BWR 1100  
+#define BWL 1900
 
-#define FWR_SLOW 1780
-#define FWL_SLOW 1220
-#define BWR_SLOW 1220  
-#define BWL_SLOW 1780
+#define FWR_SLOW 1800
+#define FWL_SLOW 1200
+#define BWR_SLOW 1200  
+#define BWL_SLOW 1800
 
 #define FWR_FULL 1950
 #define FWL_FULL 1050
@@ -30,11 +30,11 @@
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
 #define HOME_BASE_THRESHOLD 5000 // Time in milliseconds to stay at home base
 
-#define rUSLimit 15
+#define rUSLimit 20
 #define lUSLimit 15
 #define frontTOFLimit 300
 #define frontTOFWFLimit 350 // Wall following limit
-#define frontTOFMinimum 449
+#define frontTOFMinimum 400
 #define frontTOFWFMinimum 450
 #define WallfollowingLimit 25
 #define weightDetectingDistance 130 // Difference between long range TOFs to turn the robot if a weight is detected
@@ -74,8 +74,8 @@ void turn_left() {
 }
 
 void turn_left_slow() {
-    navigation->Rservo.writeMicroseconds(FWR);  
-    navigation->Lservo.writeMicroseconds(BWL);
+    navigation->Rservo.writeMicroseconds(FWR_SLOW);
+    navigation->Lservo.writeMicroseconds(BWL_SLOW);
 }
 
 void turn_right() {
@@ -84,13 +84,13 @@ void turn_right() {
 }
 
 void turn_right_slow() {
-    navigation->Rservo.writeMicroseconds(BWR);  
-    navigation->Lservo.writeMicroseconds(FWL); 
+    navigation->Rservo.writeMicroseconds(BWR_SLOW);  
+    navigation->Lservo.writeMicroseconds(FWL_SLOW); 
 }
 
 void go_straight() {
   navigation->Rservo.writeMicroseconds(FWR);  
-  navigation->Lservo.writeMicroseconds(FWL);  
+  navigation->Lservo.writeMicroseconds(FWL);
 }
 
 void reverse() {
@@ -138,11 +138,55 @@ int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionOfTurn)
   return currentHeadingAngle;
 }
 
+int angleToTurn_WF(int currentHeadingAngle, int angleToTurn, int directionOfTurn)
+{
+  imu_loop();
+  if ((currentHeadingAngle > 5) && (currentHeadingAngle < 85)) {
+    if (directionOfTurn == 0) { // Robot is turning left
+      return 90;
+    } else {
+      return 0;
+    }
+  } else if ((currentHeadingAngle > 95) && (currentHeadingAngle < 175)) {
+    if (directionOfTurn == 0) { // Robot is turning left
+      return 180;
+    } else {
+      return 90;
+    }
+  } else if ((currentHeadingAngle > 185) && (currentHeadingAngle < 265)) {
+    if (directionOfTurn == 0) { // Robot is turning left
+      return 270;
+    } else {
+      return 180;
+    }
+  } else if ((currentHeadingAngle > 275) && (currentHeadingAngle < 355)) {
+    if (directionOfTurn == 0) { // Robot is turning left
+      return 0;
+    } else {
+      return 270;
+    }
+  }
+}
+
+bool perpendicularToWall(int currentHeadingAngle)
+{
+  if (
+     ((currentHeadingAngle >= 355) && (currentHeadingAngle <= 5)) ||
+     ((currentHeadingAngle >= 85) &&  (currentHeadingAngle <= 95)) ||
+     ((currentHeadingAngle >= 175) && (currentHeadingAngle <= 185))||
+     ((currentHeadingAngle >= 265) && (currentHeadingAngle <= 275))
+     ) {
+      return true;
+  } else {
+    return false;
+  }
+}
+
 void walldetected() 
 {
   if ((get_mTOF() < frontTOFLimit)||(get_tlTOF() < topLevel_longRangeTOFLimit)||(get_trTOF() < topLevel_longRangeTOFLimit)) {
     while ((get_mTOF() < frontTOFWFLimit)||(get_tlTOF() < topLevel_longRangeTOFWFLimit)){
-      Serial.println("Stuck Here 1");
+      Serial.println("Have not detcted a wall for wall following yet");
       allTOFReadings();
       turn_left();
     }
@@ -302,51 +346,68 @@ void wallFollowingRight()
     go_straight();
     Serial.println("Stuck Here");
   }
-  reverseDrum();
+  stopDrum();
 
   if (navigation->walldetected_bool == true) {
-    if (get_trTOF() < topLevel_longRangeTOFWFLimit) { // ((mTOF < frontTOFWFMinimum) && (r_us <= rUSLimit))
-      // stop();
-      delay(500);
-      int desired_angle = angleToTurn(get_headingAngle(0), 10, 0);
-      while (reachedDesiredHeadingAngle(desired_angle) == false)  {
-        // Serial.print(get_headingAngle(0));
-        // Serial.print("\t");
-        // Serial.println("Stuck Here 1");
-        // allTOFReadings();
-        //allUSValues();
-        // mTOF = get_mTOF();
-        // r_us = get_rUS();
-
-        // turn_left_slow();
-        roll_left();
-        imu_loop();
-      }
-    } else if (get_mTOF() < frontTOFWFMinimum) {
-      int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing, 0);
-      while (reachedDesiredHeadingAngle(desired_angle) == false)
-        roll_left();
-        imu_loop();
-    }
-    // go_straight();
-    // else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit + 30)) {
-    //   int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing, 1);
-    //   // stop();
-    //   delay(500);
-    //   while (reachedDesiredHeadingAngle(desired_angle) == false) {
-    //     Serial.println("Stuck Here 2");
-    //     allTOFReadings();
-
-    //     mTOF = get_mTOF();
-    //     r_us = get_rUS();
-    //     trTOF = get_trTOF();
-    //     turn_right_slow();
-    //     imu_loop();
-    //   }
-    //   go_straight();
-    // } 
-    else {
+    allTOFReadings();
+    if ((perpendicularToWall(get_headingAngle(0))) && (get_mTOF() > frontTOFWFLimit)) {
       go_straight();
+      Serial.println("Going straight during Wall Following (1)");
+    } 
+    else {
+      int desired_angle = angleToTurn_WF(get_headingAngle(0), angleToTurn, 0);
+        if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit))) {
+            while (reachedDesiredHeadingAngle(desired_angle) == false) {
+              if (perpendicularToWall(get_headingAngle(0))) {
+                break;
+              }
+              turn_left_slow();
+              imu_loop();
+              Serial.print("Desired Heading Angle: ");
+              Serial.print("\t");
+              Serial.print(desired_angle);
+              Serial.print("\t");
+              Serial.print("Current Heading Angle: ");
+              Serial.print("\t");
+              Serial.print(get_headingAngle(0));
+              Serial.print("\t");
+              Serial.println("Turning left during Wall Following");
+            }
+            // stop();
+            // delay(500);
+        } else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) || (trTOF > topLevel_longRangeTOFLimit)) {
+          // go_straight();
+          // delay(1000);
+          while (reachedDesiredHeadingAngle(desired_angle) == false) {
+            if (perpendicularToWall(get_headingAngle(0))) {
+                break;
+              }
+            turn_right_slow();
+            imu_loop();
+            Serial.print("Desired Heading Angle: ");
+              Serial.print("\t");
+              Serial.print(desired_angle);
+              Serial.print("\t");
+              Serial.print("Current Heading Angle: ");
+              Serial.print("\t");
+              Serial.print(get_headingAngle(0));
+              Serial.print("\t");
+            Serial.println("Turning right during Wall Following");
+          }
+          // stop();
+          // delay(500);
+        } else {
+          go_straight();
+          Serial.print("Desired Heading Angle: ");
+          Serial.print("\t");
+          Serial.print(desired_angle);
+          Serial.print("\t");
+          Serial.print("Current Heading Angle: ");
+          Serial.print("\t");
+          Serial.print(get_headingAngle(0));
+          Serial.print("\t");
+          Serial.println("Going straight during Wall Following (2)");
+        }
     }
   }
 }

@@ -37,6 +37,9 @@ void wallFollowingRight();
 bool reachedDesiredHeadingAngle(int desiredAngle);
 int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionToTurn);
 
+int angleToTurn_WF(int currentHeadingAngle, int angleToTurn, int directionOfTurn);
+bool perpendicularToWall(int currentHeadingAngle);
+
 bool get_weight_detected_bool();
 void set_weight_detected_bool(bool state);
 
