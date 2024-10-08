@@ -49,11 +49,11 @@ void Sensors::srTOF_Setup()
       while (1);
     }
   
-    // if ((i == 1)||(i == 3)) {
-    //   sensorsL0[i].setSignalRateLimit(0.1);
-    //   sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-    //   sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-    // }
+    if ((i == 1)||(i == 3)) {
+      sensorsL0[i].setSignalRateLimit(0.1);
+      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+    }
 
     #if defined LONG_RANGE
     // lower the return signal rate limit (default is 0.25 MCPS)
@@ -179,7 +179,7 @@ void Sensors::srTOF_Values()
         case 3:
           srTOF_holder4 = sensorsL0[i].readRangeSingleMillimeters();
           //srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
-          entry2 = &srTOF_holder4;// Barrel tof reading
+          entry2 = &srTOF_holder4;// entry2 tof reading
           break;
       }
     }

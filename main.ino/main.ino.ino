@@ -153,7 +153,7 @@ void getOutOfEnemyBase()
     } else {
       turn_right();
     }
-    Serial.print("IN ENEMY BASE");
+    // Serial.print("IN ENEMY BASE");
     imu_loop();
   }
   stopDrum();
@@ -175,7 +175,7 @@ void getOutOfHomeBase()
     } else {
       turn_right();
     }
-    Serial.print("IN ENEMY BASE");
+    // Serial.print("IN ENEMY BASE");
     imu_loop();
   }
   stopDrum();
@@ -209,14 +209,14 @@ void setup() {
   collection->collection_setup();
   imu_ptr->imu_setup();
 
-  Serial.println("Goodbye");
+  // Serial.println("Goodbye");
 }
 
 void loop() {
   allTOFReadings();
   updateColourValues();
   imu_loop();
-  // printingSensorValues();
+  //printingSensorValues();
   // printingIMUData();
 
   /* Getting colour of home base - One time loop at startup */
@@ -224,7 +224,7 @@ void loop() {
   while (colourDataCollected == false) {
     int end_collecting = millis();
     collectingColourData();
-    printingColourData();
+    // printingColourData();
     if ((end_collecting - start_collecting) > 3000) {
       colourDataCollected = true;
       assignEnemyBaseRGB();
@@ -270,8 +270,8 @@ void loop() {
     }
   }
 
-  updateColourValues();
-  printingColourData();
+  // updateColourValues();
+  // printingColourData();
 
   // printingSensorValues();
   // Serial.println("Printed Sensor Values");
