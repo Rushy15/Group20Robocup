@@ -153,6 +153,40 @@ void check_stuck_condition() {
     }
 }
 
+void weight_entered_entry() {
+  if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
+        && !(navigation -> isRemovingWeight)) {  /* Only check if not currently removing */
+      navigation -> isRemovingWeight = true;
+      go_straight();
+      delay(500);
+      stop();
+      delay(500);
+      int start = millis();
+      int end;
+      while (get_barrel() > 100) {
+          allTOFReadings();
+          spinDrum();
+          int current_psState = read_psState();
+          set_psState(current_psState);
+          Serial.print(get_psState());
+          end = millis();
+          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 14 seconds */
+            while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
+              allTOFReadings();
+              end = millis();
+              reverseDrum();
+              reverse();
+              navigation -> isRemovingWeight = false;
+            }
+            navigation -> isRemovingWeight = false;
+            stopDrum();
+            break;
+          }
+      }
+  }
+}
+
+
 void general_navigation()
 {
   int mTOF = get_mTOF();
@@ -163,6 +197,7 @@ void general_navigation()
     navigation->start_weight_detection = millis();
     if (tr_tof < tl_tof){
       while (mTOF < frontTOFMinimum){
+        weight_entered_entry();
         allTOFReadings();
         mTOF = get_mTOF();
         turn_left();
@@ -170,6 +205,7 @@ void general_navigation()
     }
     else if (tr_tof > tl_tof){
       while (mTOF < frontTOFMinimum){
+        weight_entered_entry();
         allTOFReadings();
         mTOF = get_mTOF();
         turn_right();
@@ -198,8 +234,8 @@ void weightDetection(bool direction)
 
   if (direction) {
     while ((tr - br) > weightDetectingDistance) {
+      weight_entered_entry();
       turn_right();
-
       allTOFReadings();
       allUSValues();
       tr = get_trTOF();
@@ -207,8 +243,8 @@ void weightDetection(bool direction)
     }
   } else {
     while ((tl - bl) > weightDetectingDistance) {
+      weight_entered_entry();
       turn_left();
-
       allTOFReadings();
       allUSValues();
       tl = get_tlTOF();
@@ -228,12 +264,14 @@ void wallFollowing()
 
   /* Following wall on the right */
   while (navigation->walldetected_bool == false) {
+    weight_entered_entry();
     walldetected();
     Serial.println("Stuck Here");
     allTOFReadings();
     allUSValues();
     go_straight();
   }
+  reverseDrum();
 
   if (navigation->walldetected_bool == true) {
     if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit)) ||
@@ -348,4 +386,14 @@ void set_weight_detected_bool(bool state)
 bool get_weight_detected_bool()
 {
   return navigation->weight_detcted_bool;
+}
+
+void set_isRemovingWeight_bool(bool state)
+{
+  navigation -> isRemovingWeight = state;
+}
+
+bool get_isRemovingWeight_bool()
+{
+  return navigation -> isRemovingWeight;
 }

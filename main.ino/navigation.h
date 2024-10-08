@@ -10,7 +10,7 @@ class Navigation {
   public:
     Servo Rservo;
     Servo Lservo;
-
+    bool isRemovingWeight = false;
     bool walldetected_bool = false;
     bool robotstuck_bool = false;
     bool weight_detcted_bool = false;
@@ -39,6 +39,9 @@ bool get_weight_detected_bool();
 void set_weight_detected_bool(bool state);
 
 void set_wall_detected_bool(bool state);
+
+bool get_isRemovingWeight_bool();
+bool set_isRemovingWeight_bool(bool state);
 
 void general_navigation();
 void weightDetection(bool direction);
