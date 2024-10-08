@@ -10,7 +10,7 @@ class Navigation {
   public:
     Servo Rservo;
     Servo Lservo;
-
+    bool isRemovingWeight = false;
     bool walldetected_bool = false;
     bool robotstuck_bool = false;
     bool weight_detcted_bool = false;
@@ -26,19 +26,26 @@ void stop();
 void reverse();
 void turn_left();
 void roll_left();
+void turn_left_slow();
 void turn_right();
+void turn_right_slow();
 void roll_right();
 
 void walldetected();
 void wallFollowing();
 
 bool reachedDesiredHeadingAngle(int desiredAngle);
-int angleToTurn(int currentHeadingAngle, int angleToTurn);
+int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionToTurn);
 
 bool get_weight_detected_bool();
 void set_weight_detected_bool(bool state);
 
 void set_wall_detected_bool(bool state);
+
+bool get_isRemovingWeight_bool();
+void set_isRemovingWeight_bool(bool state);
+
+void weight_entered_entry();
 
 void general_navigation();
 void weightDetection(bool direction);

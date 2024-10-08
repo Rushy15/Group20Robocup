@@ -2,6 +2,7 @@
 #include "sensors.h"
 #include "storage.h"
 #include "imu.h"
+#include "collection.h"
 
 #define N 1500 // Neutral Speed
 
@@ -20,19 +21,24 @@
 #define BWR_FULL 1050
 #define BWL_FULL 1950
 
-#define STUCK_THRESHOLD 3000 // Time in milliseconds to consider stuck
+#define ENTRY_MIN 50
+#define ENTRY_MAX 150
+#define ENTRY2_MIN 30
+#define ENTRY2_MAX 100
+
+#define STUCK_THRESHOLD 2500 // Time in milliseconds to consider stuck
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
 #define HOME_BASE_THRESHOLD 5000 // Time in milliseconds to stay at home base
 
-#define rUSLimit 15
+#define rUSLimit 20
 #define lUSLimit 15
 #define frontTOFLimit 300
-#define frontTOFWFLimit 450 // Wall following limit
-#define frontTOFMinimum 500
+#define frontTOFWFLimit 350 // Wall following limit
+#define frontTOFMinimum 450
 #define frontTOFWFMinimum 500
 #define WallfollowingLimit 25
 #define weightDetectingDistance 130 // Difference between long range TOFs to turn the robot if a weight is detected
-#define maxStraightLineTravelTime 5000
+#define maxStraightLineTravelTime 4000
 #define weightDetectingDistanceMax 1200
 
 #define topLevel_longRangeTOFLimit 170
@@ -66,9 +72,19 @@ void turn_left() {
     navigation->Lservo.writeMicroseconds(BWL_FULL);
 }
 
+void turn_left_slow() {
+    navigation->Rservo.writeMicroseconds(FWR);  
+    navigation->Lservo.writeMicroseconds(BWL);
+}
+
 void turn_right() {
     navigation->Rservo.writeMicroseconds(BWR_FULL);  
     navigation->Lservo.writeMicroseconds(FWL_FULL); 
+}
+
+void turn_right_slow() {
+    navigation->Rservo.writeMicroseconds(BWR);  
+    navigation->Lservo.writeMicroseconds(FWL); 
 }
 
 void go_straight() {
@@ -77,8 +93,8 @@ void go_straight() {
 }
 
 void reverse() {
-  navigation->Rservo.writeMicroseconds(BWR_SLOW);  
-  navigation->Lservo.writeMicroseconds(BWL_SLOW);  
+  navigation->Rservo.writeMicroseconds(BWR);  
+  navigation->Lservo.writeMicroseconds(BWL);  
 }
 
 void roll_right()
@@ -98,14 +114,27 @@ void roll_left()
   navigation->Lservo.writeMicroseconds(N); 
 }
 
-int angleToTurn(int currentHeadingAngle, int angleToTurn)
+int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionOfTurn)
 {
-  if ((currentHeadingAngle + angleToTurn) <= 360) {
-    return currentHeadingAngle + angleToTurn;
-  } else {
-    return ((currentHeadingAngle + angleToTurn) - 360);
+  if (directionOfTurn == 0) { // Robot is turning left
+    int difference = (currentHeadingAngle - angleToTurn);
+    if (difference > 0) {
+      return difference;
+    } else {
+      return 360 - abs(difference);
+    }
   }
-  return 0;
+
+  if (directionOfTurn == 1) { // Robot Turning Right
+    int difference = currentHeadingAngle + angleToTurn;
+    if (difference <= 359) {
+    return difference;
+  } else {
+      return (difference - 360);
+    }
+  }
+
+  return currentHeadingAngle;
 }
 
 void walldetected() 
@@ -122,9 +151,10 @@ void walldetected()
 
 bool reachedDesiredHeadingAngle(int desiredAngle)
 {
+  imu_loop();
   int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
   int angle_to_turn = abs(current_angle - desiredAngle);
-  if (angle_to_turn < 10) {
+  if (angle_to_turn < 20) {
     return true;
   }
   return false;
@@ -154,6 +184,40 @@ void check_stuck_condition() {
     }
 }
 
+void weight_entered_entry() {
+  if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
+        && !(navigation -> isRemovingWeight)) {  /* Only check if not currently removing */
+      navigation -> isRemovingWeight = true;
+      go_straight();
+      delay(500);
+      stop();
+      delay(500);
+      int start = millis();
+      int end;
+      while (get_barrel() > 100) {
+          allTOFReadings();
+          spinDrum();
+          int current_psState = read_psState();
+          set_psState(current_psState);
+          Serial.print(get_psState());
+          end = millis();
+          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 14 seconds */
+            while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
+              allTOFReadings();
+              end = millis();
+              reverseDrum();
+              reverse();
+              navigation -> isRemovingWeight = false;
+            }
+            navigation -> isRemovingWeight = false;
+            stopDrum();
+            break;
+          }
+      }
+  }
+}
+
+
 void general_navigation()
 {
   int mTOF = get_mTOF();
@@ -161,8 +225,10 @@ void general_navigation()
   int tl_tof = get_tlTOF();
 
   if (mTOF < frontTOFLimit){ //units in mm
+    navigation->start_weight_detection = millis();
     if (tr_tof < tl_tof){
       while (mTOF < frontTOFMinimum){
+        // weight_entered_entry();
         allTOFReadings();
         mTOF = get_mTOF();
         turn_left();
@@ -170,6 +236,7 @@ void general_navigation()
     }
     else if (tr_tof > tl_tof){
       while (mTOF < frontTOFMinimum){
+        // weight_entered_entry();
         allTOFReadings();
         mTOF = get_mTOF();
         turn_right();
@@ -177,9 +244,11 @@ void general_navigation()
     }
   } 
   else if (get_trTOF() < topLevel_longRangeTOFLimit) {///units in cm
+    navigation->start_weight_detection = millis();
     turn_left();
   } 
   else if (get_tlTOF() < topLevel_longRangeTOFLimit) {///units in cm
+    navigation->start_weight_detection = millis();
     turn_right();
   }
   else {
@@ -196,8 +265,8 @@ void weightDetection(bool direction)
 
   if (direction) {
     while ((tr - br) > weightDetectingDistance) {
+      weight_entered_entry();
       turn_right();
-
       allTOFReadings();
       allUSValues();
       tr = get_trTOF();
@@ -205,8 +274,8 @@ void weightDetection(bool direction)
     }
   } else {
     while ((tl - bl) > weightDetectingDistance) {
+      weight_entered_entry();
       turn_left();
-
       allTOFReadings();
       allUSValues();
       tl = get_tlTOF();
@@ -226,13 +295,23 @@ void wallFollowing()
 
   /* Following wall on the right */
   while (navigation->walldetected_bool == false) {
+<<<<<<< HEAD
+=======
+    weight_entered_entry();
+    walldetected();
+    Serial.println("Stuck Here");
+    allTOFReadings();
+    allUSValues();
+>>>>>>> mukhriz_new_branch_for_testing
     go_straight();
     walldetected();
     allTOFReadings();
     Serial.println("Stuck Here");
   }
+  reverseDrum();
 
   if (navigation->walldetected_bool == true) {
+<<<<<<< HEAD
     if ((mTOF < frontTOFWFLimit) || ((mTOF < frontTOFWFLimit) && (r_us <= rUSLimit)) || (get_trTOF() < topLevel_longRangeTOFWFLimit - 10)) {
             stop();
             delay(500);
@@ -271,6 +350,29 @@ void wallFollowing()
       stop();
       delay(1000);
       while (trTOF > topLevel_longRangeTOFWFLimit) {
+=======
+    if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit)) ||
+        (get_trTOF() < topLevel_longRangeTOFWFLimit)) {
+      // stop();
+      delay(500);
+      while ((mTOF < frontTOFWFMinimum)) {
+        Serial.println("Stuck Here 1");
+        allTOFReadings();
+        //allUSValues();
+        mTOF = get_mTOF();
+        r_us = get_rUS();
+
+        turn_left();
+        imu_loop();
+      }
+      go_straight();
+    }
+    else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit + 50)) {
+      int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing, 1);
+      stop();
+      delay(500);
+      while (reachedDesiredHeadingAngle(desired_angle) == false) {
+>>>>>>> mukhriz_new_branch_for_testing
         // (r_us > WallfollowingLimit) && (trTOF > topLevel_longRangeTOFWFLimit) && (mTOF > frontTOFLimit)
         Serial.println("Stuck Here 2");
         allTOFReadings();
@@ -278,9 +380,14 @@ void wallFollowing()
         mTOF = get_mTOF();
         r_us = get_rUS();
         trTOF = get_trTOF();
+<<<<<<< HEAD
 
         roll_right();
         //imu_loop();
+=======
+        turn_right_slow();
+        imu_loop();
+>>>>>>> mukhriz_new_branch_for_testing
       }
       go_straight();
     } else {
@@ -313,17 +420,21 @@ void nav_loop(bool weight_detected)
     if (weight_detected == false) {
       navigation->start_weight_detection = millis();
       set_weight_detected_bool(true);
-      // Serial.println("Timer Started");
     } else {
       int end_weight_detection = millis();
+<<<<<<< HEAD
 
       if (end_weight_detection - navigation->start_weight_detection >  maxStraightLineTravelTime) {
         int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringFindingWeight);
         stop();
         delay(300);
+=======
+      
+      if (end_weight_detection - navigation->start_weight_detection >  maxStraightLineTravelTime) {
+        int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringFindingWeight, 1);
+>>>>>>> mukhriz_new_branch_for_testing
         while (reachedDesiredHeadingAngle(desired_angle) == false) {
           if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
-            //Serial.print("Gotcha1");
             set_weight_detected_bool(true);
             break;
           } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
@@ -340,9 +451,8 @@ void nav_loop(bool weight_detected)
 
             imu_loop();
           }
-        }
+        }    
         set_weight_detected_bool(false);
-        turn_right();
       }
     }
     general_navigation();
@@ -363,4 +473,14 @@ void set_weight_detected_bool(bool state)
 bool get_weight_detected_bool()
 {
   return navigation->weight_detcted_bool;
+}
+
+void set_isRemovingWeight_bool(bool state)
+{
+  navigation -> isRemovingWeight = state;
+}
+
+bool get_isRemovingWeight_bool()
+{
+  return navigation -> isRemovingWeight;
 }

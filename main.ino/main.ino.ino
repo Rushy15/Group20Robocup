@@ -4,6 +4,7 @@
 #include "collection.h"
 #include "imu.h"
 
+
 /* Enum that stores different states for the FSM */
 typedef enum {
   IDLE = 0,
@@ -15,11 +16,14 @@ typedef enum {
 
 RobotState_t currentState = IDLE; /* Initialise the current state of the FSM to IDLE */
 
-bool isRemovingWeight = false;
+// bool isRemovingWeight = false;
 bool colourDataCollected = false;
 
 int start_collecting;
 
+
+#define frontTOFLimit 300
+#define frontTOFMinimum 450
 #define ENTRY_MIN 50
 #define ENTRY_MAX 150
 #define ENTRY2_MIN 30
@@ -30,8 +34,12 @@ int start_collecting;
 #define MAX_COLLECTING_TIME 14000
 #define REVERSE_SYSTEM_TIME 16000
 
+<<<<<<< HEAD
 #define ANGLE_TO_TURN_DURING_UNLOADING 90 // Can assign a max value of 180 
 #define TR_TOF_UNLOADING_DISTANCE_LIMIT 170
+=======
+#define ANGLE_TO_TURN_DURING_UNLOADING 135 // Can assign a max value of 180 
+>>>>>>> mukhriz_new_branch_for_testing
 
 
                                               /* Printing functions for Serial */
@@ -107,20 +115,43 @@ void printingIMUData()
   }
 }
 
-void disposingWeightsLoop()
+void disposingWeightsLoop(int direction)
 {
+<<<<<<< HEAD
   go_straight();
   delay(500);
+=======
+>>>>>>> mukhriz_new_branch_for_testing
   int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
-  int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
+  int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING, direction); 
+  go_straight();
+  delay(500);
   stop();
   delay(500);
+<<<<<<< HEAD
   while ((reachedDesiredHeadingAngle(desired_angle) == false) && (get_trTOF() < TR_TOF_UNLOADING_DISTANCE_LIMIT)) {
     turn_left();
     allTOFReadings();
+=======
+  // while (reachedDesiredHeadingAngle(desired_angle) == false) {
+  //   turn_left();
+  //   imu_loop();
+  // } 
+  int mTOF = get_mTOF();
+  int tr_tof = get_trTOF();
+  int tl_tof = get_tlTOF();
+
+  // if (mTOF < frontTOFLimit){ //units in mm // mTOF < frontTOFMinimum
+  while (reachedDesiredHeadingAngle(desired_angle) == false){
+    // allTOFReadings();
+    // mTOF = get_mTOF();
+    turn_left_slow();
+>>>>>>> mukhriz_new_branch_for_testing
     imu_loop();
-  } 
+    // } 
+  }
   stop();
+  delay(500);
   reset_capacity();
 }
 
@@ -158,6 +189,7 @@ void setup() {
 void loop() 
 {
   allTOFReadings();
+  updateColourValues();
   imu_loop();
 
   //printingSensorValues();
@@ -177,75 +209,31 @@ void loop()
   /* State Machine for the robot */
   nav_loop(navigation->weight_detcted_bool);
 
-  
   /* Checking to see if a weight has entered the channel of the robot */
-  if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
-        && !isRemovingWeight) {  /* Only check if not currently removing */
-      isRemovingWeight = true;
-      go_straight();
-      delay(500);
-      stop();
-      delay(500);
-      int start = millis();
-      int end;
-      while (get_barrel() > 100) {
-          allTOFReadings();
-          spinDrum();
-          int current_psState = read_psState();
-          set_psState(current_psState);
-          Serial.print(get_psState());
-          end = millis();
-          if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 14 seconds */
-            while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
-              allTOFReadings();
-              end = millis();
-              reverseDrum();
-              reverse();
-              isRemovingWeight = false;
-            }
-            isRemovingWeight = false;
-            stopDrum();
-            break;
-          }
-      }
-  }
+  weight_entered_entry();
 
   /* Checking to see if the weight has entered the barrel */
-  if (get_barrel() < 100 && isRemovingWeight) {
+  if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
       stop();
       stopDrum();
       storing(get_psState());
-      Serial.print("passing");
-      isRemovingWeight = false;  /* Reset flag once the barrel has returned */
+      set_isRemovingWeight_bool(false);  /* Reset flag once the barrel has returned */
   }
 
-  // if (inHomeBase() && (get_weightsCollected() >= 1)) {
-  //   disposingWeightsLoop();
-  // }
+  if (inHomeBase() && (get_weightsCollected() >= 1)) {
+    disposingWeightsLoop(0);
+  }
 
   // /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
+    imu_loop();
     wallFollowing();
     updateColourValues();
     // printingColourData();
     if (inHomeBase()) {
-      disposingWeightsLoop();
-      // int angle_to_turn = abs(current_angle - desired_angle);
-
-      // Serial.print("Current Angle");
-      // Serial.print(current_angle);
-      // Serial.print('\t');
-      // Serial.print("Desired Angle");
-      // Serial.print(desired_angle);
-      // Serial.print('\t');
-      // Serial.print("Difference");
-      // Serial.println(angle_to_turn);
-
-      // current_angle = get_headingAngle(0);
-      // angle_to_turn = abs(current_angle - desired_angle);
-      
-      // Serial.print("Current Angle in Loop");
-      // Serial.println(current_angle);
+      stopDrum();
+      disposingWeightsLoop(0);
+      imu_loop();
     }
   }
 }
