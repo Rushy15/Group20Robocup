@@ -198,7 +198,6 @@ void loop()
       stop();
       stopDrum();
       storing(get_psState());
-      Serial.print("passing");
       set_isRemovingWeight_bool(false);  /* Reset flag once the barrel has returned */
   }
 
@@ -214,22 +213,6 @@ void loop()
     if (inHomeBase()) {
       stopDrum();
       disposingWeightsLoop();
-      // int angle_to_turn = abs(current_angle - desired_angle);
-
-      // Serial.print("Current Angle");
-      // Serial.print(current_angle);
-      // Serial.print('\t');
-      // Serial.print("Desired Angle");
-      // Serial.print(desired_angle);
-      // Serial.print('\t');
-      // Serial.print("Difference");
-      // Serial.println(angle_to_turn);
-
-      // current_angle = get_headingAngle(0);
-      // angle_to_turn = abs(current_angle - desired_angle);
-      
-      // Serial.print("Current Angle in Loop");
-      // Serial.println(current_angle);
     }
   }
 }

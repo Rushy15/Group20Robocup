@@ -290,8 +290,7 @@ void wallFollowing()
         //allUSValues();
         mTOF = get_mTOF();
         r_us = get_rUS();
-        // int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
-        // int desired_angle = angleToTurn(current_angle, angleToTurnDuringWallFollowing);
+
         turn_left();
         imu_loop();
       }
@@ -325,7 +324,6 @@ void nav_loop(bool weight_detected)
   uint16_t br = get_brTOF();
   uint16_t tl = get_tlTOF();
   uint16_t bl = get_blTOF();
-  Serial.print("Checking Conditions");
   
   if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
     //Serial.print("Gotcha1");
