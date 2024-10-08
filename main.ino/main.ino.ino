@@ -4,23 +4,9 @@
 #include "collection.h"
 #include "imu.h"
 
-
-/* Enum that stores different states for the FSM */
-typedef enum {
-  IDLE = 0,
-  NAVIGATION,
-  COLLECTION,
-  STORAGE,
-  WALL_FOLLOWING
-} RobotState_t;
-
-RobotState_t currentState = IDLE; /* Initialise the current state of the FSM to IDLE */
-
 // bool isRemovingWeight = false;
 bool colourDataCollected = false;
-
 int start_collecting;
-
 
 #define frontTOFLimit 300
 #define frontTOFMinimum 450
@@ -35,6 +21,7 @@ int start_collecting;
 #define REVERSE_SYSTEM_TIME 16000
 
 #define ANGLE_TO_TURN_DURING_UNLOADING 135 // Can assign a max value of 180 
+#define ANGLE_TO_TURN_IF_IN_ENEMYBASE 180 // Can assign a max value of 180 
 
 
                                               /* Printing functions for Serial */
@@ -179,7 +166,7 @@ void loop()
   //printingSensorValues();
   printingIMUData();
 
-  /* Getting colour of home base - One time loop at startup*/
+  /* Getting colour of home base - One time loop at startup */
   int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
   while(colourDataCollected == false) {
     int end_collecting = millis();
@@ -187,6 +174,7 @@ void loop()
     printingColourData();
     if ((end_collecting - start_collecting) > 3000) {
       colourDataCollected = true;
+      assignEnemyBaseRGB();
     }
   }
   
@@ -208,10 +196,24 @@ void loop()
     disposingWeightsLoop(0);
   }
 
+  if (inEnemyBase()) {
+    int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+    int direction = 1 ? (homeBaseColour() == 0) : 0; // Returns 0 if homebase is 
+    int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_IF_IN_ENEMYBASE, direction) ? ();
+    while (reachedDesiredHeadingAngle(desired_angle) == false) {
+      if (direction == 0) {
+        turn_left();
+      } else {
+        turn_right();
+      }
+    reverseDrum();
+    }
+  }
+
   // /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
     imu_loop();
-    wallFollowing();
+    wallFollowingRight();
     updateColourValues();
     // printingColourData();
     if (inHomeBase()) {

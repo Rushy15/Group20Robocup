@@ -34,6 +34,7 @@ class Storage {
 
     uint16_t clear, red, green, blue;
     uint16_t red_homebase, green_homebase, blue_homebase;
+    uint16_t red_enemy, green_enemy, blue_enemy;
     
     // uint16_t r, g, b; // Final values to be used
 
@@ -54,9 +55,35 @@ void storing(uint8_t proximityState);
 bool max_capacity();
 void reset_capacity();
 
+/*
+Updates the current RGB Values
+*/
 void updateColourValues();
+
+/*
+One time function run to collect home base data at startup
+*/
 void collectingColourData();
+
+/*
+Assigns RGB values for Enemy Base
+*/
+void assignEnemyBaseRGB(); 
+
+/*
+Checks to see if the robot is in the home base
+*/
 bool inHomeBase();
+
+/*
+Checks to see if the robot is in the enemy base
+*/
+bool inEnemyBase();
+
+/*
+Returns 1 if the home base is blue else returns 0 if the home base is green
+*/
+int homeBaseColour();
 
 uint16_t getR();
 uint16_t getG();

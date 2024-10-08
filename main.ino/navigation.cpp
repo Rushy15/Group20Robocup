@@ -44,6 +44,7 @@
 #define topLevel_longRangeTOFLimit 170
 #define topLevel_longRangeTOFWFLimit 300
 
+#define angleTurningTolerance 10
 #define angleToTurnDuringWallFollowing 90
 #define angleToTurnDuringFindingWeight 345
 
@@ -154,7 +155,7 @@ bool reachedDesiredHeadingAngle(int desiredAngle)
   imu_loop();
   int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
   int angle_to_turn = abs(current_angle - desiredAngle);
-  if (angle_to_turn < 20) {
+  if (angle_to_turn < angleTurningTolerance) {
     return true;
   }
   return false;
@@ -284,7 +285,7 @@ void weightDetection(bool direction)
   }
 }
 
-void wallFollowing()
+void wallFollowingRight()
 {
   allTOFReadings();
   allUSValues();

@@ -2,6 +2,16 @@
 #include "storage.h"
 // #include "navigation.h"
 
+/* RGB for Blue Base */
+#define R_BLUEBASE 0
+#define B_BLUEBASE 0
+#define G_BLUEBASE 0
+
+/* RGB for Green Base */
+#define R_GREENBASE 0
+#define G_GREENBASE 0
+#define B_GREENBASE 0
+
 Storage *storage = nullptr;
 
 void Storage::colour_sensor_setup()
@@ -128,7 +138,7 @@ void Storage::removeWeights(int Timer1)
     }
     }
 }
-
+  
 void collectingColourData()
 {
   updateColourValues();
@@ -136,6 +146,43 @@ void collectingColourData()
   storage->red_homebase = storage->red;
   storage->blue_homebase = storage->blue;
   storage->green_homebase = storage->green;
+}
+
+void assignEnemyBaseRGB()
+{
+  uint16_t rh = storage->red_homebase;
+  uint16_t bh = storage->blue_homebase;
+  uint16_t gh = storage->green_homebase;
+
+  // Add conditions based on home base data assign other base values for enemy base
+  if (((rh >= (R_BLUEBASE - 10)) && (rh <= (R_BLUEBASE + 10))) &&
+     ((bh >= (B_BLUEBASE - 10)) && (bh <= (B_BLUEBASE + 10))) &&
+     ((gh >= (G_BLUEBASE - 10)) && (gh <= (G_BLUEBASE + 10)))) { // If RGB_Home == blue, assign RGB_Enemy == green
+    storage->red_enemy = R_GREENBASE
+    storage->blue_enemy = B_GREENBASE
+    storage->green_enemy = G_GREENBASE
+
+  } else { // Else assign RGB_Enemy == blue
+    storage->red_enemy = R_BLUEBASE
+    storage->blue_enemy = B_BLUEBASE
+    storage->green_enemy = G_GREENBASE
+  }
+}
+
+int homeBaseColour()
+{
+  // Desired colour values of Homebase
+  uint16_t rh = storage->red_homebase;
+  uint16_t bh = storage->blue_homebase;
+  uint16_t gh = storage->green_homebase;
+
+  if (((rh >= (R_BLUEBASE - 10)) && (rh <= (R_BLUEBASE + 10))) &&
+     ((bh >= (B_BLUEBASE - 10)) && (bh <= (B_BLUEBASE + 10))) &&
+     ((gh >= (G_BLUEBASE - 10)) && (gh <= (G_BLUEBASE + 10)))) {
+      return 1; // Blue Base - Turning Right
+  } else {
+    return 0; // Green Base - Turning Left
+  }
 }
 
 void updateColourValues()
@@ -160,6 +207,27 @@ bool inHomeBase()
   if (((r >= (rh - 10)) && (r <= (rh + 10))) &&
      ((b >= (bh - 10)) && (b <= (bh + 10))) &&
      ((g >= (gh - 10)) && (g <= (gh + 10)))) {
+      return true;
+     } else {
+      return false;
+     }
+}
+
+bool inEnemyBase()
+{
+  // Measured colour values
+  uint16_t r = storage->red;
+  uint16_t b = storage->blue;
+  uint16_t g = storage->green;
+
+  // Desired colour values of Enemy base
+  uint16_t re = storage->red_enemy;
+  uint16_t be = storage->blue_enemy;
+  uint16_t ge = storage->green_enemy;
+
+  if (((r >= (re - 10)) && (r <= (re + 10))) &&
+     ((b >= (be - 10)) && (b <= (be + 10))) &&
+     ((g >= (ge - 10)) && (g <= (ge + 10)))) {
       return true;
      } else {
       return false;
