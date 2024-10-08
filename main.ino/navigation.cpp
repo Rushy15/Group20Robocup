@@ -281,7 +281,7 @@ void wallFollowing()
 
   if (navigation->walldetected_bool == true) {
     if ((mTOF < frontTOFMinimum) || ((mTOF < frontTOFMinimum) && (r_us <= rUSLimit)) ||
-        (get_trTOF() < topLevel_longRangeTOFWFLimit - 20)) {
+        (get_trTOF() < topLevel_longRangeTOFWFLimit - 50)) {
       stop();
       delay(500);
       while ((mTOF < frontTOFWFMinimum)) {
@@ -296,7 +296,7 @@ void wallFollowing()
       }
       go_straight();
     }
-    else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit + 30)) {
+    else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit + 50)) {
       int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringWallFollowing);
       while (reachedDesiredHeadingAngle(desired_angle) == false) {
         // (r_us > WallfollowingLimit) && (trTOF > topLevel_longRangeTOFWFLimit) && (mTOF > frontTOFLimit)
