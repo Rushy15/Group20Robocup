@@ -2,15 +2,18 @@
 #include "storage.h"
 // #include "navigation.h"
 
-/* RGB for Blue Base */
-#define R_BLUEBASE 57
-#define B_BLUEBASE 48
-#define G_BLUEBASE 60
-
 /* RGB for Green Base */
 #define R_GREENBASE 56
 #define G_GREENBASE 45
 #define B_GREENBASE 25
+
+/* RGB for Blue Base */
+#define R_BLUEBASE 57
+#define G_BLUEBASE 48
+#define B_BLUEBASE 60
+
+#define LOWERBOUND_COLOUR_CHECK 10
+#define UPPERBOUND_COLOUR_CHECK 10
 
 Storage *storage = nullptr;
 
@@ -47,14 +50,14 @@ void Storage::rotateDrum(int start, int dest) {
     myservo.write(pos);    
     delay(15);                      
   }         
-}
-  else if (start > dest){
-  for (pos = start; pos >= dest; pos -= 2  ) {
-    // Serial.println(pos);
-    myservo.write(pos);   
-    delay(15);                      
-  }       
-}
+  }
+    else if (start > dest){
+    for (pos = start; pos >= dest; pos -= 2  ) {
+      // Serial.println(pos);
+      myservo.write(pos);   
+      delay(15);                      
+    }       
+  }
   
 }
 
@@ -72,7 +75,7 @@ void Storage::discard_all_weights() {
 
 void Storage::storeWeights()
 {
-      Serial.print(millis()-Timer1);
+      // Serial.print(millis()-Timer1);
       switch (weights_collected) {
         case 0:
           delay(500);
@@ -107,7 +110,7 @@ void Storage::removeWeights(int Timer1)
 {
   while  ((millis() - Timer1) < 500){
      if ((millis()-Timer1) > 450){
-      Serial.print(millis()-Timer1);
+      // Serial.print(millis()-Timer1);
       switch (weights_collected) {
       case 0:
         delay(1000);
@@ -155,9 +158,9 @@ void assignEnemyBaseRGB()
   uint16_t gh = storage->green_homebase;
 
   // Add conditions based on home base data assign other base values for enemy base
-  if (((rh >= (R_BLUEBASE - 10)) && (rh <= (R_BLUEBASE + 10))) &&
-     ((bh >= (B_BLUEBASE - 10)) && (bh <= (B_BLUEBASE + 10))) &&
-     ((gh >= (G_BLUEBASE - 10)) && (gh <= (G_BLUEBASE + 10)))) { // If RGB_Home == blue, assign RGB_Enemy == green
+  if (((rh >= (R_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (rh <= (R_BLUEBASE + UPPERBOUND_COLOUR_CHECK))) &&
+     ((bh >= (B_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (bh <= (B_BLUEBASE + UPPERBOUND_COLOUR_CHECK))) &&
+     ((gh >= (G_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (gh <= (G_BLUEBASE + UPPERBOUND_COLOUR_CHECK)))) { // If RGB_Home == blue, assign RGB_Enemy == green
     storage->red_enemy = R_GREENBASE;
     storage->blue_enemy = B_GREENBASE;
     storage->green_enemy = G_GREENBASE;
@@ -165,7 +168,7 @@ void assignEnemyBaseRGB()
   } else { // Else assign RGB_Enemy == blue
     storage->red_enemy = R_BLUEBASE;
     storage->blue_enemy = B_BLUEBASE;
-    storage->green_enemy = G_GREENBASE;
+    storage->green_enemy = G_BLUEBASE;
   }
 }
 
@@ -176,9 +179,9 @@ int homeBaseColour()
   uint16_t bh = storage->blue_homebase;
   uint16_t gh = storage->green_homebase;
 
-  if (((rh >= (R_BLUEBASE - 10)) && (rh <= (R_BLUEBASE + 10))) &&
-     ((bh >= (B_BLUEBASE - 10)) && (bh <= (B_BLUEBASE + 10))) &&
-     ((gh >= (G_BLUEBASE - 10)) && (gh <= (G_BLUEBASE + 10)))) {
+  if (((rh >= (R_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (rh <= (R_BLUEBASE + UPPERBOUND_COLOUR_CHECK))) &&
+     ((bh >= (B_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (bh <= (B_BLUEBASE + UPPERBOUND_COLOUR_CHECK))) &&
+     ((gh >= (G_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (gh <= (G_BLUEBASE + UPPERBOUND_COLOUR_CHECK)))) {
       return 1; // Blue Base - Turning Right
   } else {
     return 0; // Green Base - Turning Left
@@ -224,6 +227,7 @@ bool inEnemyBase()
   uint16_t re = storage->red_enemy;
   uint16_t be = storage->blue_enemy;
   uint16_t ge = storage->green_enemy;
+
 
   if (((r >= (re - 10)) && (r <= (re + 10))) &&
      ((b >= (be - 10)) && (b <= (be + 10))) &&

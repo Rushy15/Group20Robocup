@@ -48,12 +48,12 @@ void Sensors::srTOF_Setup()
       Serial.println(i);
       while (1);
     }
-
-    if ((i == 1)||(i == 3)) {
-      sensorsL0[i].setSignalRateLimit(0.1);
-      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-    }
+  
+    // if ((i == 1)||(i == 3)) {
+    //   sensorsL0[i].setSignalRateLimit(0.1);
+    //   sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+    //   sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+    // }
 
     #if defined LONG_RANGE
     // lower the return signal rate limit (default is 0.25 MCPS)

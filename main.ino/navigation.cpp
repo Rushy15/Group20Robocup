@@ -69,8 +69,8 @@ void stop()
 }
 
 void turn_left() {
-    navigation->Rservo.writeMicroseconds(FWR_FULL);  
-    navigation->Lservo.writeMicroseconds(BWL_FULL);
+    navigation->Rservo.writeMicroseconds(FWR);  
+    navigation->Lservo.writeMicroseconds(BWL);
 }
 
 void turn_left_slow() {
@@ -79,8 +79,8 @@ void turn_left_slow() {
 }
 
 void turn_right() {
-    navigation->Rservo.writeMicroseconds(BWR_FULL);  
-    navigation->Lservo.writeMicroseconds(FWL_FULL); 
+    navigation->Rservo.writeMicroseconds(BWR);  
+    navigation->Lservo.writeMicroseconds(FWL); 
 }
 
 void turn_right_slow() {
@@ -89,8 +89,8 @@ void turn_right_slow() {
 }
 
 void go_straight() {
-  navigation->Rservo.writeMicroseconds(FWR_FULL);  
-  navigation->Lservo.writeMicroseconds(FWL_FULL);  
+  navigation->Rservo.writeMicroseconds(FWR);  
+  navigation->Lservo.writeMicroseconds(FWL);  
 }
 
 void reverse() {
