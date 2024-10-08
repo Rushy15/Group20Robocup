@@ -31,6 +31,7 @@ int start_collecting;
 #define REVERSE_SYSTEM_TIME 16000
 
 #define ANGLE_TO_TURN_DURING_UNLOADING 90 // Can assign a max value of 180 
+#define TR_TOF_UNLOADING_DISTANCE_LIMIT 170
 
 
                                               /* Printing functions for Serial */
@@ -109,12 +110,14 @@ void printingIMUData()
 void disposingWeightsLoop()
 {
   go_straight();
-  delay(1000);
+  delay(500);
   int current_angle = get_headingAngle(0); // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
   int desired_angle = angleToTurn(current_angle, ANGLE_TO_TURN_DURING_UNLOADING);
   stop();
-  while (reachedDesiredHeadingAngle(desired_angle) == false) {
+  delay(500);
+  while ((reachedDesiredHeadingAngle(desired_angle) == false) && (get_trTOF() < TR_TOF_UNLOADING_DISTANCE_LIMIT)) {
     turn_left();
+    allTOFReadings();
     imu_loop();
   } 
   stop();
@@ -224,7 +227,7 @@ void loop()
   while (max_capacity()) {
     wallFollowing();
     updateColourValues();
-    printingColourData();
+    // printingColourData();
     if (inHomeBase()) {
       disposingWeightsLoop();
       // int angle_to_turn = abs(current_angle - desired_angle);
