@@ -233,6 +233,12 @@ void loop() {
 
   /* State Machine for the robot */
   nav_loop(navigation->weight_detcted_bool);
+  
+  int current_psState = read_psState();
+  set_psState(current_psState);
+  if (get_barrel() < 100) {
+    storing(get_psState());
+  }
 
   /* Checking to see if a weight has entered the channel of the robot */
   weight_entered_entry();
