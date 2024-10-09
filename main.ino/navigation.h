@@ -22,14 +22,17 @@ class Navigation {
 
 
 void go_straight();
+void go_straight_full();
 void stop();
 void reverse();
+void reverse_full();
 void turn_left();
 void roll_left();
 void turn_left_slow();
 void turn_right();
 void turn_right_slow();
 void roll_right();
+void shake();
 
 void walldetected();
 void wallFollowingRight();
