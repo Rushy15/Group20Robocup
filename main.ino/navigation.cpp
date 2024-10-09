@@ -39,7 +39,7 @@
 #define WallfollowingLimit 25
 #define weightDetectingDistance 130 // Difference between long range TOFs to turn the robot if a weight is detected
 #define maxStraightLineTravelTime 4000
-#define weightDetectingDistanceMax 1200
+#define weightDetectingDistanceMax 1000
 
 #define topLevel_longRangeTOFLimit 170
 #define topLevel_longRangeTOFWFLimit 300

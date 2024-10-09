@@ -67,9 +67,9 @@ void Sensors::srTOF_Setup()
     // reduce timing budget to 20 ms (default is about 33 ms)
     sensorsL0[i].setMeasurementTimingBudget(20000);
 
-    #elif defined HIGH_ACCURACY
-    // increase timing budget to 200 ms
-    sensorsL0[i].setMeasurementTimingBudget(200000);
+    // #elif defined HIGH_ACCURACY
+    // // increase timing budget to 200 ms
+    // sensorsL0[i].setMeasurementTimingBudget(200000);
     #endif
 
     // Each sensor must have its address changed to a unique value other than
@@ -114,9 +114,9 @@ void Sensors::lrTOF_Setup()
     sensorsL1[i].setROISize(4, 4);
     sensorsL1[i].setROICenter(164);
     }
-
+  ///set to short mode (resistance against ambient light)
     sensorsL1[i].setDistanceMode(VL53L1X::Short);
-    sensorsL1[i].setMeasurementTimingBudget(20000);
+    //sensorsL1[i].setMeasurementTimingBudget(20000);
     
    
     // Each sensor must have its address changed to a unique value other than
@@ -196,22 +196,22 @@ void Sensors::lrTOF_Values()
       }
     switch (i){
       case 0:
-        lrTOF_holder1 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder1 = sensorsL1[i].read();
         //lrTOF_holder1 = blTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         blTOF = &lrTOF_holder1; // Bottom left tof reading
         break;
       case 1:
-        lrTOF_holder2 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder2 = sensorsL1[i].read();
         //lrTOF_holder2 = trTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         trTOF = &lrTOF_holder2; // Top right tof reading
         break;
       case 2:
-        lrTOF_holder3 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder3 = sensorsL1[i].read();
         //lrTOF_holder3 = brTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         brTOF = &lrTOF_holder3; // Bottom right tof reading
         break;
       case 3:
-        lrTOF_holder4 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        lrTOF_holder4 = sensorsL1[i].read();
         //lrTOF_holder4 = tlTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
         tlTOF = &lrTOF_holder4; // Top left tof reading
         break;
