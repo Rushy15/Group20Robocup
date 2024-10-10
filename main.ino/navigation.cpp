@@ -45,7 +45,7 @@
 #define topLevel_longRangeTOFWFLimit 300
 
 #define angleTurningTolerance 6
-#define angleToTurnDuringWallFollowing 75
+#define angleToTurnDuringWallFollowing 90
 #define angleToTurnDuringFindingWeight 345
 
 unsigned long stuckStartTime = 0;
@@ -376,10 +376,10 @@ void wallFollowingRight()
   while (navigation->walldetected_bool == false) {
     walldetected();
     allTOFReadings();
-    allUSValues();
+    // allUSValues();
     
     go_straight();
-    // Serial.println("Stuck Here");
+    Serial.println("Stuck Here");
   }
   stopDrum();
 
@@ -388,30 +388,30 @@ void wallFollowingRight()
     if ((perpendicularToWall(get_headingAngle(0))) && (get_mTOF() > frontTOFWFLimit)) {
       go_straight();
       // Serial.println("Going straight during Wall Following (1)");
-    } 
+    }
     else {
         allTOFReadings();
         if ((mTOF < frontTOFLimit) || ((mTOF < frontTOFLimit) && (r_us <= rUSLimit))) {
           int desired_angle = angleToTurn_WF(get_headingAngle(0), angleToTurn, 0);
             while ((reachedDesiredHeadingAngle(desired_angle) == false) && (get_mTOF() < frontTOFMinimum)) {
-              if (perpendicularToWall(get_headingAngle(0))) {
-                break;
-              }
+              // if (perpendicularToWall(get_headingAngle(0))) {
+              //   break;
+              // }
               turn_left();
               imu_loop();
               allTOFReadings();
 
-              // Serial.print("Desired Heading Angle: ");
-              // Serial.print("\t");
-              // Serial.print(desired_angle);
-              // Serial.print("\t");
-              // Serial.print("Current Heading Angle: ");
-              // Serial.print("\t");
-              // Serial.print(get_headingAngle(0));
-              // Serial.print("\t");
-              // Serial.println("Turning left during Wall Following");
+              Serial.print("Desired Heading Angle: ");
+              Serial.print("\t");
+              Serial.print(desired_angle);
+              Serial.print("\t");
+              Serial.print("Current Heading Angle: ");
+              Serial.print("\t");
+              Serial.print(get_headingAngle(0));
+              Serial.print("\t");
+              Serial.println("Turning left during Wall Following");
             }
-            stop();
+            // stop();
             delay(500);
             // imu_loop();
         } else if ((mTOF > frontTOFLimit) && (r_us > rUSLimit) && (trTOF > topLevel_longRangeTOFLimit)) {
@@ -426,15 +426,15 @@ void wallFollowingRight()
             imu_loop();
             allTOFReadings();
 
-            // Serial.print("Desired Heading Angle: ");
-            // Serial.print("\t");
-            // Serial.print(desired_angle);
-            // Serial.print("\t");
-            // Serial.print("Current Heading Angle: ");
-            // Serial.print("\t");
-            // Serial.print(get_headingAngle(0));
-            // Serial.print("\t");
-            // Serial.println("Turning right during Wall Following");
+            Serial.print("Desired Heading Angle: ");
+            Serial.print("\t");
+            Serial.print(desired_angle);
+            Serial.print("\t");
+            Serial.print("Current Heading Angle: ");
+            Serial.print("\t");
+            Serial.print(get_headingAngle(0));
+            Serial.print("\t");
+            Serial.println("Turning right during Wall Following");
           }
           stop();
           delay(500);

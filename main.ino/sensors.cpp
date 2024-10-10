@@ -4,7 +4,7 @@
 #define XSHUT_PIN 3
 #define VL53L0X_ADDRESS_START 0x30
 #define VL53L1X_ADDRESS_START 0x35
-#define SAMPLE_SIZE 15
+#define SAMPLE_SIZE 5
 //#define LONG_RANGE
 #define HIGH_SPEED
 //#define HIGH_ACCURACY
@@ -47,12 +47,6 @@ void Sensors::srTOF_Setup()
       Serial.print("NOT INITED");
       Serial.println(i);
       while (1);
-    }
-  
-    if ((i == 1)||(i == 3)) {
-      sensorsL0[i].setSignalRateLimit(0.1);
-      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-      sensorsL0[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
     }
 
     #if defined LONG_RANGE
@@ -106,11 +100,19 @@ void Sensors::lrTOF_Setup()
       //Serial.println(i);
       while (1);
     }
-    if ((i == 1)||(i == 2)) {
+    if (i == 0) {
+    sensorsL1[i].setROISize(4, 4);
+    sensorsL1[i].setROICenter(91);//No 116 consider:90, 82
+    }
+    if (i == 1) {
+    sensorsL1[i].setROISize(4, 4);
+    sensorsL1[i].setROICenter(241);
+    }
+    if ((i == 3)||(i == 4)) {
     sensorsL1[i].setROISize(4, 4);
     sensorsL1[i].setROICenter(220);
     }
-    if ((i == 0)||(i == 3)) {
+    if ((i == 2)||(i == 5)) {
     sensorsL1[i].setROISize(4, 4);
     sensorsL1[i].setROICenter(164);
     }
@@ -169,17 +171,7 @@ void Sensors::srTOF_Values()
         case 1:
           srTOF_holder2 = sensorsL0[i].readRangeSingleMillimeters();
           //srTOF_holder2 = entry_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
-          entry = &srTOF_holder2;// Entry channel tof reading
-          break;
-        case 2:
-          srTOF_holder3 = sensorsL0[i].readRangeSingleMillimeters();
-          //srTOF_holder3 = barrel_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
-          barrel = &srTOF_holder3;// Barrel tof reading
-          break;
-        case 3:
-          srTOF_holder4 = sensorsL0[i].readRangeSingleMillimeters();
-          //srTOF_holder4 = entry2_Avg.reading(sensorsL0[i].readRangeSingleMillimeters());
-          entry2 = &srTOF_holder4;// entry2 tof reading
+          barrel = &srTOF_holder2;// Entry channel tof reading
           break;
       }
     }
@@ -196,25 +188,35 @@ void Sensors::lrTOF_Values()
       }
     switch (i){
       case 0:
-        lrTOF_holder1 = ((sensorsL1[i].readRangeSingleMillimeters()));
-        //lrTOF_holder1 = blTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
-        blTOF = &lrTOF_holder1; // Bottom left tof reading
+        lrTOF_holder1 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        // lrTOF_holder1 =  entry2_Avg.reading(sensorsL1[i].readRangeContinuousMillimeters());
+        entry2 = &lrTOF_holder1; // Entry tof reading
         break;
       case 1:
-        lrTOF_holder2 = ((sensorsL1[i].readRangeSingleMillimeters()));
-        //lrTOF_holder2 = trTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
-        trTOF = &lrTOF_holder2; // Top right tof reading
+        lrTOF_holder2 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        // lrTOF_holder2 =  entry_Avg.reading(sensorsL1[i].readRangeContinuousMillimeters());
+        entry = &lrTOF_holder2; // Entry tof reading
         break;
       case 2:
-        lrTOF_holder3 = ((sensorsL1[i].readRangeSingleMillimeters()));
-        //lrTOF_holder3 = brTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
-        brTOF = &lrTOF_holder3; // Bottom right tof reading
+        lrTOF_holder3 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder1 = blTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
+        blTOF = &lrTOF_holder3; // Bottom left tof reading
         break;
       case 3:
-        lrTOF_holder4 = ((sensorsL1[i].readRangeSingleMillimeters()));
-        //lrTOF_holder4 = tlTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
-        tlTOF = &lrTOF_holder4; // Top left tof reading
+        lrTOF_holder4 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder2 = trTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
+        trTOF = &lrTOF_holder4; // Top right tof reading
         break;
+      case 4:
+        lrTOF_holder5 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder4 = tlTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
+        brTOF = &lrTOF_holder5; // Bottom right tof reading
+        break;
+      case 5:
+        lrTOF_holder6 = ((sensorsL1[i].readRangeContinuousMillimeters()));
+        //lrTOF_holder4 = tlTOF_Avg.reading(sensorsL1[i].readRangeSingleMillimeters());
+        tlTOF = &lrTOF_holder6; // Top left tof reading
+      break;
    }
   }
 }

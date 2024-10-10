@@ -15,10 +15,10 @@
 class Sensors {
   protected:
     static const byte SX1509_ADDRESS = 0x3F;
-    static const uint8_t sensorCountL0 = 4;
-    static const uint8_t sensorCountL1 = 4;
-    const uint8_t xshutPinsL0[sensorCountL0] = {0,1,2,3};
-    const uint8_t xshutPinsL1[sensorCountL1] = {4,5,6,7};
+    static const uint8_t sensorCountL0 = 2;
+    static const uint8_t sensorCountL1 = 6;
+    const uint8_t xshutPinsL0[sensorCountL0] = {0,1};
+    const uint8_t xshutPinsL1[sensorCountL1] = {2,3,4,5,6,7};
 
     SX1509 io;
     VL53L0X sensorsL0[sensorCountL0];
@@ -40,6 +40,8 @@ class Sensors {
     uint16_t lrTOF_holder2;
     uint16_t lrTOF_holder3;
     uint16_t lrTOF_holder4;
+    uint16_t lrTOF_holder5;
+    uint16_t lrTOF_holder6;
 
     void lrTOF_Setup();
     void srTOF_Setup();

@@ -209,6 +209,18 @@ void setup() {
   collection->collection_setup();
   imu_ptr->imu_setup();
 
+  /* Getting colour of home base - One time loop at startup */
+  // int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
+  // while (colourDataCollected == false) {
+  //   int end_collecting = millis();
+  //   collectingColourData();
+  //   // printingColourData();
+  //   if ((end_collecting - start_collecting) > 3000) {
+  //     colourDataCollected = true;
+  //     assignEnemyBaseRGB();
+  //   }
+  // }
+  
   // Serial.println("Goodbye");
 }
 
@@ -216,40 +228,28 @@ void loop() {
   allTOFReadings();
   updateColourValues();
   imu_loop();
-  //printingSensorValues();
-  // printingIMUData();
+  printingSensorValues();
+  printingIMUData();
 
-  /* Getting colour of home base - One time loop at startup */
-  int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
-  while (colourDataCollected == false) {
-    int end_collecting = millis();
-    collectingColourData();
-    // printingColourData();
-    if ((end_collecting - start_collecting) > 3000) {
-      colourDataCollected = true;
-      assignEnemyBaseRGB();
-    }
-  }
-
-  /* State Machine for the robot */
-  nav_loop(navigation->weight_detcted_bool);
+  // /* State Machine for the robot */
+  // nav_loop(navigation->weight_detcted_bool);
   
-  int current_psState = read_psState();
-  set_psState(current_psState);
-  if (get_barrel() < 100) {
-    storing(get_psState());
-  }
+  // int current_psState = read_psState();
+  // set_psState(current_psState);
+  // if (get_barrel() < 100) {
+  //   storing(get_psState());
+  // }
 
-  /* Checking to see if a weight has entered the channel of the robot */
-  weight_entered_entry();
+  // /* Checking to see if a weight has entered the channel of the robot */
+  // weight_entered_entry();
 
-  /* Checking to see if the weight has entered the barrel */
-  if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
-    stop();
-    stopDrum();
-    storing(get_psState());
-    set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
-  }
+  // /* Checking to see if the weight has entered the barrel */
+  // if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
+  //   stop();
+  //   stopDrum();
+  // storing(get_psState());
+  //   set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
+  // }
 
   // if (inHomeBase()) {
   //   if (get_weightsCollected() == 0) {
@@ -263,25 +263,26 @@ void loop() {
   //   getOutOfEnemyBase();
   // }
 
-  // /* Checking to see if the robot has collected three weights and is at full capacicty*/
-  while (max_capacity()) {
-    imu_loop();
-    wallFollowingRight();
-    updateColourValues();
-    // printingColourData();
-    if (inHomeBase()) {
-      stopDrum();
-      disposingWeightsLoop(0);
-      imu_loop();
-    }
-  }
+  // // /* Checking to see if the robot has collected three weights and is at full capacicty*/
+  // while (max_capacity()) {
+  //   imu_loop();
+  //   wallFollowingRight();
+  //   updateColourValues();
+  //   // printingColourData();
+  //   if (inHomeBase()) {
+  //     stopDrum();
+  //     disposingWeightsLoop(0);
+  //     imu_loop();
+  //   }
+  // }
 
   // updateColourValues();
   // printingColourData();
 
   // printingSensorValues();
   // Serial.println("Printed Sensor Values");
-  // wallFollowingRight();
+  wallFollowingRight();
   // Serial.println("Exited Wall Following");
   // go_straight();
+  // spinDrum();
 }

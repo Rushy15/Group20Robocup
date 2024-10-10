@@ -76,6 +76,7 @@ void Storage::discard_all_weights() {
 void Storage::storeWeights()
 {
       // Serial.print(millis()-Timer1);
+      allTOFReadings();
       switch (weights_collected) {
         case 0:
           delay(500);
@@ -256,6 +257,7 @@ void reset_capacity()
 
 void storing(uint8_t proximityState)
 { 
+  allTOFReadings();
   storage->Timer1 = millis();
   int Timer1 = storage->Timer1; 
   storage->finished_storing = 0;
