@@ -34,8 +34,9 @@ void turn_right_slow();
 void roll_right();
 void shake();
 
-void walldetected();
+void walldetected(int state);
 void wallFollowingRight();
+void wallFollowingLeft();
 
 bool reachedDesiredHeadingAngle(int desiredAngle);
 int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionToTurn);

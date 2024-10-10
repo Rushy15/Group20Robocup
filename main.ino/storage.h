@@ -26,6 +26,7 @@ class Storage {
     Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
   
     int psState; // Final Value used within the FSM
+    bool robotLeaveBase;
 
     unsigned long Timer1, currTimer;  
     unsigned long prevTimer = 0;
@@ -88,6 +89,16 @@ int homeBaseColour();
 uint16_t getR();
 uint16_t getG();
 uint16_t getB();
+
+/*
+Returns true when the robot has collected one weight 
+*/
+bool get_robotLeaveBase();
+
+/*
+sets to true when the robot has collected one weight and resets when the robot dumps weights
+*/
+void set_robotLeaveBase(bool state);
 
 extern Storage *storage;
 #endif // STORAGE_H

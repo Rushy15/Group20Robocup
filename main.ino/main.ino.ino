@@ -128,7 +128,7 @@ void disposingWeightsLoop(int direction) {
   while (reachedDesiredHeadingAngle(desired_angle) == false) {
     // allTOFReadings();
     // mTOF = get_mTOF();
-    turn_left_slow();
+    turn_left();
     imu_loop();
     // }
   }
@@ -224,16 +224,29 @@ void loop() {
   // Serial.print(" ");
   // Serial.println(get_entry2());
 
-  /* Getting colour of home base - One time loop at startup */
+  /* Getting colour of home base - One time loop at startup*/
   int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
-  while (colourDataCollected == false) {
+  while(colourDataCollected == false) {
     int end_collecting = millis();
     collectingColourData();
-    // printingColourData();
+    printingColourData();
     if ((end_collecting - start_collecting) > 3000) {
       colourDataCollected = true;
-      assignEnemyBaseRGB();
+      if (get_mTOF() >= 300) {
+        int exit_base_start = millis();
+        while ((millis() - exit_base_start) < 1000)
+          go_straight();
+      } else {
+        while (get_mTOF() < 300) {
+          allTOFReadings();
+          turn_left();
+          // turn_right();
+      }
+      stop();
+      delay(500);
+      go_straight();
     }
+  }
   }
 
   /* State Machine for the robot */
@@ -250,7 +263,7 @@ void loop() {
     set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
   }
 
-  if (inHomeBase()) {
+  if (inHomeBase() && get_robotLeaveBase()) {
     if (get_weightsCollected() == 0) {
       getOutOfHomeBase();
     } else if (get_weightsCollected() >= 1) {
@@ -265,7 +278,8 @@ void loop() {
   // /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
     imu_loop();
-    wallFollowingRight();
+    wallFollowingRight(); /* Green Base */
+    // wallFollowingLeft(); /* Blue Base 
     updateColourValues();
     // printingColourData();
     if (inHomeBase()) {
@@ -275,12 +289,12 @@ void loop() {
     }
   }
 
-  updateColourValues();
-  printingColourData();
+  // updateColourValues();
+  // printingColourData();
 
-  printingSensorValues();
-  Serial.println("Printed Sensor Values");
-  wallFollowingRight();
-  Serial.println("Exited Wall Following");
-  go_straight();
+  // printingSensorValues();
+  // Serial.println("Printed Sensor Values");
+  // wallFollowingRight();
+  // Serial.println("Exited Wall Following");
+  // go_straight();
 }
