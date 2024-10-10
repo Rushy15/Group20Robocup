@@ -22,9 +22,9 @@
 #define BWL_FULL 1950
 
 #define ENTRY_MIN 50
-#define ENTRY_MAX 150
+#define ENTRY_MAX 130
 #define ENTRY2_MIN 30
-#define ENTRY2_MAX 100
+#define ENTRY2_MAX 95
 
 #define STUCK_THRESHOLD 2500 // Time in milliseconds to consider stuck
 #define REVERSE_DURATION 2000 // Duration to reverse in milliseconds
