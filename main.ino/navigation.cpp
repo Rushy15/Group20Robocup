@@ -59,7 +59,7 @@ void Navigation::navigation_setup()
 {
   // Motor Setup
   Rservo.attach(28);
-  Lservo.attach(7);
+  Lservo.attach(8);
 }
 
 void stop()
@@ -99,8 +99,8 @@ void turn_right_slow() {
 }
 
 void go_straight() {
-  navigation->Rservo.writeMicroseconds(FWR);  
-  navigation->Lservo.writeMicroseconds(FWL);
+  navigation->Rservo.writeMicroseconds(1900);  
+  navigation->Lservo.writeMicroseconds(1100);
 }
 
 void go_straight_full() {
@@ -311,13 +311,15 @@ void weight_entered_entry(int startFindingWeight) {
             while ((end - start) < 20000) {
               end = millis();
               shake();
-              Serial.print("Jam it around");
+              // Serial.print("Jam it around");
+              allTOFReadings();
               int current_psState = read_psState();
               set_psState(current_psState);
               if (get_barrel() < 100) {
                 storing(get_psState());
+                stopDrum();
+                break;
               }
-              allTOFReadings();
             }
             end = millis();
             while ((end - start) < 22000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */

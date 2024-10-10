@@ -8,6 +8,8 @@
 bool colourDataCollected = false;
 int start_collecting;
 
+int current_heading_angle;
+
 #define frontTOFLimit 300
 #define frontTOFMinimum 450
 #define ENTRY_MIN 50
@@ -231,6 +233,7 @@ void loop() {
   // Serial.println(get_entry2());
 
   /* Getting colour of home base - One time loop at startup*/
+  /*====================================================================================*/
   int start_collecting = (millis()) ? (colourDataCollected == false) : 0;
   while(colourDataCollected == false) {
     int end_collecting = millis();
@@ -254,13 +257,20 @@ void loop() {
     }
   }
   assignEnemyBaseRGB();
+  current_heading_angle = millis();
   }
+  /*====================================================================================*/
 
   /* State Machine for the robot */
   nav_loop(navigation->weight_detcted_bool);
 
   /* Checking to see if a weight has entered the channel of the robot */
   weight_entered_entry(0);
+
+  // int compared_heading_angle = get_headingAngle(0);
+  // if (abs(current_heading_angle - compared_heading_angle) < 90) {
+  //   if ()
+  // }
 
   /* Checking to see if the weight has entered the barrel */
   if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
@@ -270,13 +280,13 @@ void loop() {
     set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
   }
   
-  Serial.println(get_robotLeaveBase());
-  Serial.println(storage->weights_collected);
+  // Serial.println(get_robotLeaveBase());
+  // Serial.println(storage->weights_collected);
 
-  if (get_weightsCollected() == 0) {
-    Serial.println("GET OUT");
-    storage->robotLeaveBase = false;
-  }
+  // if (get_weightsCollected() == 0) {
+  //   Serial.println("GET OUT");
+  //   storage->robotLeaveBase = false;
+  // }
   
   if (inHomeBase() && get_robotLeaveBase() == true) {
     Serial.println("In Home Base");
@@ -290,6 +300,10 @@ void loop() {
   if (inEnemyBase()) {
     getOutOfEnemyBase();
   }
+
+  // if ((millis()-current_heading_angle) > (90000)) {
+  //   get_the_fuck_out();
+  // }
 
   /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {

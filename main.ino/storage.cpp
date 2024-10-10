@@ -252,7 +252,8 @@ void reset_capacity()
   storage->discard_all_weights();
   storage->weights_collected = 0;
   set_weight_detected_bool(false);
-  set_robotLeaveBase(false);
+  // set_robotLeaveBase(false);
+  storage->robotLeaveBase = false;
 }
 
 void storing(uint8_t proximityState)
