@@ -93,9 +93,19 @@ void go_straight() {
   navigation->Lservo.writeMicroseconds(FWL);
 }
 
+void go_straight_full() {
+  navigation->Rservo.writeMicroseconds(FWR_FULL);  
+  navigation->Lservo.writeMicroseconds(FWL_FULL);
+}
+
 void reverse() {
   navigation->Rservo.writeMicroseconds(BWR);  
   navigation->Lservo.writeMicroseconds(BWL);  
+}
+
+void reverse_full() {
+  navigation->Rservo.writeMicroseconds(BWR_FULL);  
+  navigation->Lservo.writeMicroseconds(BWL_FULL);  
 }
 
 void roll_right()
@@ -113,6 +123,18 @@ void roll_left()
   navigation->Lservo.writeMicroseconds(BWL_FULL);
   delay(55); 
   navigation->Lservo.writeMicroseconds(N); 
+}
+
+void shake()
+{
+  reverse_full();
+  delay(80);
+  go_straight_full();
+  delay(80);
+  turn_left();
+  delay(80);
+  turn_right();
+  delay(80);
 }
 
 int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionOfTurn)
@@ -244,15 +266,28 @@ void weight_entered_entry() {
           spinDrum();
           int current_psState = read_psState();
           set_psState(current_psState);
-          Serial.print(get_psState());
+          // Serial.print(get_psState());
           end = millis();
           if ((end - start) > 14000) {  /* Check to see if nothing has been collected in 14 seconds */
-            while ((end - start) < 16000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
+            while ((end - start) < 20000) {
+              end = millis();
+              shake();
+              Serial.print("Jam it around");
+              int current_psState = read_psState();
+              set_psState(current_psState);
+              if (get_barrel() < 100) {
+                storing(get_psState());
+              }
+              allTOFReadings();
+            }
+            end = millis();
+            while ((end - start) < 22000) { /* Reverse the drum and robot for (14 - 12) = 2 seconds */
               allTOFReadings();
               end = millis();
               reverseDrum();
               reverse();
               navigation -> isRemovingWeight = false;
+              Serial.print("Reversing");
             }
             navigation -> isRemovingWeight = false;
             stopDrum();
