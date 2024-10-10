@@ -299,10 +299,10 @@ void weight_entered_entry(int startFindingWeight) {
       while (get_barrel() > 100) {
           allTOFReadings();
           spinDrum();
-          if (checkPitch()) {
-            get_the_fuck_out();
-            break;
-          }
+          // if (checkPitch()) {
+          //   get_the_fuck_out();
+          //   break;
+          // }
           int current_psState = read_psState();
           set_psState(current_psState);
           // Serial.print(get_psState());
@@ -521,9 +521,9 @@ void nav_loop(bool weight_detected)
   uint16_t tl = get_tlTOF();
   uint16_t bl = get_blTOF();
   
-  if (checkPitch()) {
-      get_the_fuck_out();
-  }
+  // if (checkPitch()) {
+  //     get_the_fuck_out();
+  // }
 
   if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
     //Serial.print("Gotcha1");

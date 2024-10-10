@@ -216,11 +216,12 @@ void loop() {
   allTOFReadings();
   updateColourValues();
   imu_loop();
-  Serial.print("Heading Angle (Y): ");
-  Serial.print(get_headingAngle(1));
-  Serial.print("\t");
-  Serial.print("Heading Angle (Z): ");
-  Serial.println(get_headingAngle(2));
+
+  Serial.println("Ready");
+  // Serial.print(get_headingAngle(1));
+  // Serial.print("\t");
+  // Serial.print("Heading Angle (Z): ");
+  // Serial.println(get_headingAngle(2));
   //printingSensorValues();
   // printingIMUData();
   // Serial.print("Testing:");
@@ -268,9 +269,18 @@ void loop() {
     storing(get_psState());
     set_isRemovingWeight_bool(false); /* Reset flag once the barrel has returned */
   }
+  
+  Serial.println(get_robotLeaveBase());
+  Serial.println(storage->weights_collected);
 
-  if (inHomeBase() && get_robotLeaveBase()) {
-    if (get_weightsCollected() == 0) {
+  if (get_weightsCollected() == 0) {
+    Serial.println("GET OUT");
+    storage->robotLeaveBase = false;
+  }
+  
+  if (inHomeBase() && get_robotLeaveBase() == true) {
+    Serial.println("In Home Base");
+    if ((get_weightsCollected() == 0)) {
       getOutOfHomeBase();
     } else if (get_weightsCollected() >= 1) {
       disposingWeightsLoop(homeBaseColour());  // Returns 0 if homebase is green base, returns 1 if blue base
@@ -290,13 +300,15 @@ void loop() {
     // printingColourData();
     if (inHomeBase()) {
       stopDrum();
-      disposingWeightsLoop(0);
+      disposingWeightsLoop(0); /* Green Base */
+      // disposingWeightsLoop(1); /* Blue Base */
       imu_loop();
     }
+    set_robotLeaveBase(false);
   }
 
-  updateColourValues();
-  printingColourData();
+  // updateColourValues();
+  // printingColourData();
 
   // printingSensorValues();
   // Serial.println("Printed Sensor Values");

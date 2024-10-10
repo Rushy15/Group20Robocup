@@ -26,7 +26,7 @@ class Storage {
     Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
   
     int psState; // Final Value used within the FSM
-    bool robotLeaveBase;
+    bool robotLeaveBase = false;
 
     unsigned long Timer1, currTimer;  
     unsigned long prevTimer = 0;
