@@ -153,7 +153,7 @@ void getOutOfEnemyBase()
     } else {
       turn_right();
     }
-    // Serial.print("IN ENEMY BASE");
+    Serial.print("IN ENEMY BASE");
     imu_loop();
   }
   stopDrum();
@@ -216,6 +216,11 @@ void loop() {
   allTOFReadings();
   updateColourValues();
   imu_loop();
+  Serial.print("Heading Angle (Y): ");
+  Serial.print(get_headingAngle(1));
+  Serial.print("\t");
+  Serial.print("Heading Angle (Z): ");
+  Serial.println(get_headingAngle(2));
   //printingSensorValues();
   // printingIMUData();
   // Serial.print("Testing:");
@@ -247,13 +252,14 @@ void loop() {
       go_straight();
     }
   }
+  assignEnemyBaseRGB();
   }
 
   /* State Machine for the robot */
   nav_loop(navigation->weight_detcted_bool);
 
   /* Checking to see if a weight has entered the channel of the robot */
-  weight_entered_entry();
+  weight_entered_entry(0);
 
   /* Checking to see if the weight has entered the barrel */
   if (get_barrel() < 100 && get_isRemovingWeight_bool()) {
@@ -275,7 +281,7 @@ void loop() {
     getOutOfEnemyBase();
   }
 
-  // /* Checking to see if the robot has collected three weights and is at full capacicty*/
+  /* Checking to see if the robot has collected three weights and is at full capacicty*/
   while (max_capacity()) {
     imu_loop();
     wallFollowingRight(); /* Green Base */
@@ -289,8 +295,8 @@ void loop() {
     }
   }
 
-  // updateColourValues();
-  // printingColourData();
+  updateColourValues();
+  printingColourData();
 
   // printingSensorValues();
   // Serial.println("Printed Sensor Values");

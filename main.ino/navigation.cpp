@@ -71,6 +71,11 @@ void stop()
 void turn_left() {
     navigation->Rservo.writeMicroseconds(FWR_FULL);  
     navigation->Lservo.writeMicroseconds(BWL_FULL);
+    if (navigation->firstTurn == false) {
+      navigation->firstTurn = true;
+      navigation->start_timer = millis();
+    }
+    check_stuck(0);
 }
 
 void turn_left_slow() {
@@ -81,6 +86,11 @@ void turn_left_slow() {
 void turn_right() {
     navigation->Rservo.writeMicroseconds(BWR_FULL);  
     navigation->Lservo.writeMicroseconds(FWL_FULL); 
+    if (navigation->firstTurn == false) {
+      navigation->firstTurn = true;
+      navigation->start_timer = millis();
+    }
+    check_stuck(1);
 }
 
 void turn_right_slow() {
@@ -135,6 +145,22 @@ void shake()
   delay(80);
   turn_right();
   delay(80);
+}
+
+void check_stuck(int turn_direction) // 0 = left_turn, 1 = right_turn
+{
+  int previous_turn_direction = navigation->check_stuck_count;
+  if (turn_direction != previous_turn_direction) {
+    navigation->check_stuck_count += 1;
+  } else {
+    navigation->start_timer = 0;
+    navigation->check_stuck_count = 0;
+    navigation->firstTurn = false;
+  }
+}
+
+int get_timer_val() {
+  return navigation->start_timer;
 }
 
 int angleToTurn(int currentHeadingAngle, int angleToTurn, int directionOfTurn)
@@ -255,10 +281,15 @@ void check_stuck_condition() {
     }
 }
 
-void weight_entered_entry() {
+void weight_entered_entry(int startFindingWeight) {
+  // if ((navigation->check_stuck_count > 4) && ((millis() - navigation->start_timer) > 2000)) {
+  //   get_the_fuck_out();
+  // }
+
   if ((((get_entry() < ENTRY_MAX) && (get_entry() > ENTRY_MIN)) || ((get_entry2() < ENTRY2_MAX) && (get_entry2() > ENTRY2_MIN))) 
         && !(navigation -> isRemovingWeight)) {  /* Only check if not currently removing */
       navigation -> isRemovingWeight = true;
+      navigation->weight_entered_channel = false;
       go_straight();
       delay(500);
       stop();
@@ -268,6 +299,10 @@ void weight_entered_entry() {
       while (get_barrel() > 100) {
           allTOFReadings();
           spinDrum();
+          if (checkPitch()) {
+            get_the_fuck_out();
+            break;
+          }
           int current_psState = read_psState();
           set_psState(current_psState);
           // Serial.print(get_psState());
@@ -347,16 +382,18 @@ void weightDetection(bool direction)
   uint16_t bl = get_blTOF();
 
   if (direction) {
+    int startWeightDetection = millis() ? navigation->weight_entered_channel : 0;
     while ((tr - br) > weightDetectingDistance) {
-      weight_entered_entry();
+      weight_entered_entry(startWeightDetection);
       turn_right();
       allTOFReadings();
       tr = get_trTOF();
       br = get_brTOF();      
     }
   } else {
+    int startWeightDetection = millis() ? navigation->weight_entered_channel : 0;
     while ((tl - bl) > weightDetectingDistance) {
-      weight_entered_entry();
+      weight_entered_entry(startWeightDetection);
       turn_left();
       allTOFReadings();
       tl = get_tlTOF();
@@ -484,15 +521,20 @@ void nav_loop(bool weight_detected)
   uint16_t tl = get_tlTOF();
   uint16_t bl = get_blTOF();
   
+  if (checkPitch()) {
+      get_the_fuck_out();
+  }
+
   if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
     //Serial.print("Gotcha1");
-    weightDetection(1);
+    weightDetection(1); // Weight on Right-Side
+    navigation->weight_entered_channel = true;
     set_weight_detected_bool(true);
     check_stuck_condition();
     navigation->start_weight_detection = millis();
   } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
     //Serial.print("Gotcha2");
-    weightDetection(0);
+    weightDetection(0); // Weight on Left-Side
     set_weight_detected_bool(true);
     check_stuck_condition();
     navigation->start_weight_detection = millis();
@@ -503,16 +545,18 @@ void nav_loop(bool weight_detected)
       set_weight_detected_bool(true);
     } else {
       int end_weight_detection = millis();
-      
       if (end_weight_detection - navigation->start_weight_detection >  maxStraightLineTravelTime) {
         int desired_angle = angleToTurn(get_headingAngle(0), angleToTurnDuringFindingWeight, 1);
         while (reachedDesiredHeadingAngle(desired_angle) == false) {
           if (((tr - br) > weightDetectingDistance) && (br < weightDetectingDistanceMax)) {
             set_weight_detected_bool(true);
+            imu_loop();
             break;
           } else if (((tl - bl) > weightDetectingDistance) && (bl <  weightDetectingDistanceMax)) {
             set_weight_detected_bool(true);
+            imu_loop();
             break;
+          
           } else {
             turn_right();
             
@@ -556,4 +600,40 @@ void set_isRemovingWeight_bool(bool state)
 bool get_isRemovingWeight_bool()
 {
   return navigation -> isRemovingWeight;
+}
+
+bool checkPitch()
+{
+  int pitch = get_headingAngle(1); // Returns the angle of the robot around the Y-axis
+  if (pitch > 7) {
+    return true;
+  }
+  return false;
+}
+
+bool checkRoll()
+{
+  int roll = get_headingAngle(2);  // Returns the angle of the robot around the Z-axis
+  if ((roll <= -5) || (roll >= 5)) {
+    return true;
+  }
+  return false;
+}
+
+void get_the_fuck_out()
+{
+  reverse();
+  delay(3000);
+  int direction = 0 ? get_headingAngle(2) <= 0 : 1; // Z-axis
+  int current_angle = get_headingAngle(0);  // Getting the current heading angle in the x direction (0) - y-direction = 1, z-direction = 2
+  int desired_angle = angleToTurn(current_angle, 180, direction);
+  while (reachedDesiredHeadingAngle(desired_angle) == false) {
+    Serial.println("RAMP!");
+    imu_loop();
+    if (direction == 0) {
+      turn_left();
+    } else {
+      turn_right();
+    }
+  }
 }

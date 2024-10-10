@@ -162,13 +162,13 @@ void assignEnemyBaseRGB()
      ((bh >= (B_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (bh <= (B_BLUEBASE + UPPERBOUND_COLOUR_CHECK))) &&
      ((gh >= (G_BLUEBASE - LOWERBOUND_COLOUR_CHECK)) && (gh <= (G_BLUEBASE + UPPERBOUND_COLOUR_CHECK)))) { // If RGB_Home == blue, assign RGB_Enemy == green
     storage->red_enemy = R_GREENBASE;
-    storage->blue_enemy = B_GREENBASE;
     storage->green_enemy = G_GREENBASE;
+    storage->blue_enemy = B_GREENBASE;
 
   } else { // Else assign RGB_Enemy == blue
     storage->red_enemy = R_BLUEBASE;
-    storage->blue_enemy = B_BLUEBASE;
     storage->green_enemy = G_BLUEBASE;
+    storage->blue_enemy = B_BLUEBASE;
   }
 }
 
